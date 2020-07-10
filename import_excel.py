@@ -1,4 +1,7 @@
-"""This script converts and sanitizes the original Excel files to binary format."""
+"""
+This script converts and sanitizes the original Excel files to binary format. The import function is
+very slow, but need only be run once.
+"""
 import sys
 import pandas as pd
 import pickle
