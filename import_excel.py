@@ -1,5 +1,5 @@
 """
-This script converts and sanitizes the original Excel files to binary format. The import function is
+This script converts the original Excel files to binary format. The import function is
 very slow, but need only be run once.
 """
 import sys
