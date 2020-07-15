@@ -86,7 +86,7 @@ def main():
         # filter out spurious entries
         print("Filtering out invalid entries...", file=sys.stderr)
         defect_df = defect_df[defect_df.DEFECT.notnull() & defect_df.REPORTED_DATETIME.notnull()]
-        trax_df.drop(index=[range(13, 21)], axis=1, inplace=True)
+        trax_df.drop(trax_df.columns[13:21], axis=1, inplace=True)
 
     print("Fixing small stuff...", file=sys.stderr)
     defect_df.replace({'MEL_CALENDAR_DAYS_FLAG': "NO"}, {'MEL_CALENDAR_DAYS_FLAG': "N"}, inplace=True)
