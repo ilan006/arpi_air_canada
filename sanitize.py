@@ -3,7 +3,6 @@ This script sanitizes the workshop data by identifying problems, filtering out i
 fields with sensible types.
 """
 import pandas as pd
-from datetime import datetime
 import pickle
 import sys
 
