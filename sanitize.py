@@ -2,6 +2,8 @@
 This script sanitizes the workshop data by identifying problems, filtering out invalid data and formatting
 fields with sensible types.
 """
+import math
+
 import pandas as pd
 import pickle
 import sys
@@ -48,15 +50,43 @@ def main():
 
     [defect_df, ata_df, mel_df, trax_df] = pickle.load(open(input_file, 'rb'))
 
-    defect_df = defect_df.astype({'DEFECT': 'Int64', 'PARAGRAPH': 'Int64', 'MDDR': 'Int64',
-                                  'REPORTED_HOUR': 'Int64', 'REPOTED_MINUTE': 'Int64',
-                                  'RECURRENT': 'Int64', 'SCHEDULE_DAYS': 'Int64'}, copy=False)
+    # all column names in uppper case
+    defect_df.columns = map(str.upper, defect_df.columns)
+    trax_df.columns = map(str.upper, trax_df.columns)
+
+    # convert all field types
+    corrupted_dataset = False
+    try:
+        defect_df.astype({'DEFECT': 'Int64'})
+    except ValueError:
+        # more vigorous filtering necessary (2019 dataset)
+        corrupted_dataset = True
+        print("Will try to patch corrupted dataset.")
+
+    int_field_names = ['DEFECT', 'PARAGRAPH', 'MDDR', 'REPORTED_HOUR', 'REPOTED_MINUTE', 'RECURRENT', 'SCHEDULE_DAYS',
+                       'DEFER_HOUR', 'DEFER_MINUTE', 'DEFER_TO_HOUR', 'DEFER_TO_MINUTE', 'RESOLVED_HOUR',
+                       'RESOLVED_MINUTE']
+
+    if corrupted_dataset:
+        for int_field_name in int_field_names:
+            defect_df[int_field_name] = pd.to_numeric(defect_df[int_field_name], errors='coerce')
+            defect_df[int_field_name] = defect_df[int_field_name].apply(lambda x, axis: x if pd.isna(x) else math.floor(x), axis=1)
+        for datetime_fieldname in ['REPORTED_DATE', 'DEFER_DATE', 'DEFER_TO_DATE', 'RESOLVED_DATE']:
+            defect_df[datetime_fieldname] = pd.to_datetime(defect_df[datetime_fieldname], errors='coerce')
+
+    defect_df = defect_df.astype({int_field_name: 'Int64' for int_field_name in int_field_names}, copy=False)
 
     print("Converting dates...", file=sys.stderr)
     defect_df = convert_datetime(defect_df, ['REPORTED_DATE', 'REPORTED_HOUR', 'REPOTED_MINUTE'], 'REPORTED_DATETIME')
     defect_df = convert_datetime(defect_df, ['DEFER_DATE', 'DEFER_HOUR', 'DEFER_MINUTE'], 'DEFER_DATETIME')
     defect_df = convert_datetime(defect_df, ['DEFER_TO_DATE', 'DEFER_TO_HOUR', 'DEFER_TO_MINUTE'], 'DEFER_TO_DATETIME')
     defect_df = convert_datetime(defect_df, ['RESOLVED_DATE', 'RESOLVED_HOUR', 'RESOLVED_MINUTE'], 'RESOLVED_DATETIME')
+
+    if corrupted_dataset:
+        # filter out spurious entries
+        print("Filtering out invalid entries...", file=sys.stderr)
+        defect_df = defect_df[defect_df.DEFECT.notnull() & defect_df.REPORTED_DATETIME.notnull()]
+        trax_df.drop(index=[range(13, 21)], axis=1, inplace=True)
 
     print("Fixing small stuff...", file=sys.stderr)
     defect_df.replace({'MEL_CALENDAR_DAYS_FLAG': "NO"}, {'MEL_CALENDAR_DAYS_FLAG': "N"}, inplace=True)
