@@ -52,7 +52,8 @@ def main():
     slices = list(aircraft_mapping.values())
     print(f"Split by ac is {100 * slices.count('train') / len(slices):.1f}% train, "
           f"{100 * slices.count('dev') / len(slices):.1f}% dev, "
-          f"{100 * slices.count('test') / len(slices):.1f}% test")
+          f"{100 * slices.count('test') / len(slices):.1f}% test, "
+          f"{100 * slices.count('none') / len(slices):.1f}% none")
 
     # now split the initial dataframe into three parts
     slice_df = defect_df['ac'].apply(ac_name_to_split)
@@ -63,7 +64,8 @@ def main():
 
     print(f"Split by defects is {100 * len(defect_df_train) / len(defect_df):.1f}% train, "
           f"{100 * len(defect_df_dev) / len(defect_df):.1f}% dev, "
-          f"{100 * len(defect_df_test) / len(defect_df):.1f}% test")
+          f"{100 * len(defect_df_test) / len(defect_df):.1f}% test, "
+          f"{100 * len(defect_df[slice_df == 'none']) / len(defect_df):.1f}% none")
 
     # write
     print("Writing...", file=sys.stderr)
