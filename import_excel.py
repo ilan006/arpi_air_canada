@@ -16,13 +16,13 @@ def main():
     output_file = sys.argv[2]
 
     # open with pandas
-    print("Reading...", file=sys.stderr, end=' ')
+    print("Reading (this will take a while)...", file=sys.stderr, end=' ', flush=True)
     data = [pd.read_excel(open(input_file, 'rb'), s, 0) for s in ['Defect Data', 'ATA CH-SEC',
                                                                   'MEL Code Data', 'Trax Recurrent Data']]
     print("done.", file=sys.stderr)
 
     # write binary
-    print("Writing...", file=sys.stderr, end=' ')
+    print("Writing...", file=sys.stderr, end=' ', flush=True)
     pickle.dump(data, open(output_file, 'wb'))
     print("done.", file=sys.stderr)
 
