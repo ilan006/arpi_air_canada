@@ -73,6 +73,7 @@ def main():
             defect_df[int_field_name] = defect_df[int_field_name].apply(lambda x, axis: x if pd.isna(x) else math.floor(x), axis=1)
         for datetime_fieldname in ['REPORTED_DATE', 'DEFER_DATE', 'DEFER_TO_DATE', 'RESOLVED_DATE']:
             defect_df[datetime_fieldname] = pd.to_datetime(defect_df[datetime_fieldname], errors='coerce')
+        defect_df.drop(defect_df.columns[55:], axis=1, inplace=True)
 
     defect_df = defect_df.astype({int_field_name: 'Int64' for int_field_name in int_field_names}, copy=False)
 
