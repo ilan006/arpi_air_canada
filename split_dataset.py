@@ -24,7 +24,7 @@ def ac_name_to_split(ac_name):
     result = 'none'
     if not pd.isna(ac_name):
         byte_data = ac_name.strip().lower().encode('utf-8')
-        cur_digest = int(hashlib.sha256(byte_data).hexdigest()[0:16], 16)
+        cur_digest = int(hashlib.sha256(byte_data).hexdigest()[0:4], 16)
         cur_bin = cur_digest % 1000
 
         if cur_bin <= 800:
