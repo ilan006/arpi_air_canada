@@ -19,6 +19,9 @@ def main():
     [defect_df_2018, ata_df, mel_df, trax_df] = pickle.load(open(dataset_2018, 'rb'))  # better dataset
     [defect_df_2019, _, _, _] = pickle.load(open(dataset_2019, 'rb'))
 
+    defect_df_2018.columns = map(str.lower, defect_df_2018.columns)
+    defect_df_2019.columns = map(str.lower, defect_df_2019.columns)
+
     print("Removing duplicates...", file=sys.stderr)
     defect_df_full = pd.concat([defect_df_2018, defect_df_2019], sort=True)
     defect_df_full.drop_duplicates(['defect_type', 'defect', 'defect_item'], inplace=True)
@@ -26,7 +29,7 @@ def main():
     print("Sorting...", file=sys.stderr)
     defect_df_full.sort_values(by=['ac', 'reported_datetime'], inplace=True)
 
-    print("Rearranging columns...")
+    print("Rearranging columns...", file=sys.stderr)
     proper_order = ['defect_type', 'defect', 'defect_item', 'defect_description', 'status', 'ac', 'reported_datetime',
                     'chapter', 'section', 'paragraph', 'i_f_s_d',  'defect_category', 'mddr', 'defer', 'defer_date',
                     'defer_hour', 'defer_minute', 'defer_to_date', 'defer_to_hour', 'defer_to_minute', 'mel',
