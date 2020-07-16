@@ -23,6 +23,9 @@ def main():
     defect_df_full = pd.concat([defect_df_2018, defect_df_2019], sort=True)
     defect_df_full.drop_duplicates(['defect_type', 'defect', 'defect_item'], inplace=True)
 
+    print("Sorting...", file=sys.stderr)
+    defect_df_full.sort_values(by=['ac', 'reported_datetime'], inplace=True)
+
     print("Writing...", file=sys.stderr)
     pickle.dump([defect_df_full, ata_df, mel_df, trax_df], open(output_file, 'wb'))
 
