@@ -61,7 +61,7 @@ def main():
     except ValueError:
         # more vigorous filtering necessary (2019 dataset)
         corrupted_dataset = True
-        print("Will try to patch corrupted dataset.")
+        print("Detected corrupted dataset - will try to patch.")
 
     int_field_names = ['DEFECT', 'PARAGRAPH', 'MDDR', 'REPORTED_HOUR', 'REPOTED_MINUTE', 'RECURRENT', 'SCHEDULE_DAYS',
                        'DEFER_HOUR', 'DEFER_MINUTE', 'DEFER_TO_HOUR', 'DEFER_TO_MINUTE', 'RESOLVED_HOUR',
