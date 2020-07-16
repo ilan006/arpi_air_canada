@@ -2,9 +2,9 @@
 This script combines datasets, one for 2018 and the other for 2019. It should also remove duplicates.
 """
 import pickle
+import sys
 
 import pandas as pd
-import sys
 
 
 def main():
@@ -26,8 +26,28 @@ def main():
     print("Sorting...", file=sys.stderr)
     defect_df_full.sort_values(by=['ac', 'reported_datetime'], inplace=True)
 
+    print("Rearranging columns...")
+    proper_order = ['defect_type', 'defect', 'defect_item', 'defect_description', 'status', 'ac', 'reported_datetime',
+                    'chapter', 'section', 'paragraph', 'i_f_s_d',  'defect_category', 'mddr', 'defer', 'defer_date',
+                    'defer_hour', 'defer_minute', 'defer_to_date', 'defer_to_hour', 'defer_to_minute', 'mel',
+                    'mel_number', 'reported_date', 'reported_hour', 'repoted_minute', 'resolution_description',
+                    'resolution_category', 'resolved_date', 'resolved_hour', 'resolved_minute', 'created_date',
+                    'modified_date', 'recurrent', 'schedule_hours', 'schedule_cycles', 'schedule_days', 'skill',
+                    'man_hours', 'man_required', 'sdr', 'repeat_number', 'completed_number', 'defer_notes',
+                    'release_to_service_by', 'mel_calendar_days_flag', 'pn_incident', 'ongoing_trouble_shooting',
+                    'planning_dept', 'planning_sub_dept', 'schedule_hours_repeat', 'schedule_cycles_repeat',
+                    'schedule_days_repeat', 'mel_sub', 'moc_item_description', 'asr', 'mel_alert']
+
+    cols: list = defect_df_full.columns.tolist()
+
+    for col_label in [proper_order[i] for i in range(len(proper_order) - 1, 0, -1) if proper_order[i] in cols]:
+        cols.remove(col_label)
+        cols.insert(0, col_label)
+
     print("Writing...", file=sys.stderr)
     pickle.dump([defect_df_full, ata_df, mel_df, trax_df], open(output_file, 'wb'))
+
+    print("Done!", file=sys.stderr)
 
 
 if __name__ == '__main__':
