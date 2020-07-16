@@ -10,6 +10,7 @@ This script carries out the split in a reproducible manner.
 Fun fact: the plural of aircraft is aircraft.
 """
 import hashlib
+import pandas as pd
 import pickle
 import sys
 
@@ -20,16 +21,18 @@ def ac_name_to_split(ac_name):
     :param ac_name: The aircraft name, i.e. AA-12028
     :return: Either 'train', 'dev', or 'test'
     """
-    byte_data = ac_name.strip().lower().encode('utf-8')
-    cur_digest = int(hashlib.sha256(byte_data).hexdigest()[0:16], 16)
-    cur_bin = cur_digest % 1000
+    result = 'none'
+    if not pd.isna(ac_name):
+        byte_data = ac_name.strip().lower().encode('utf-8')
+        cur_digest = int(hashlib.sha256(byte_data).hexdigest()[0:16], 16)
+        cur_bin = cur_digest % 1000
 
-    if cur_bin <= 800:
-        result = 'train'
-    elif cur_bin <= 900:
-        result = 'dev'
-    else:
-        result = 'test'
+        if cur_bin <= 800:
+            result = 'train'
+        elif cur_bin <= 900:
+            result = 'dev'
+        else:
+            result = 'test'
 
     return result
 
