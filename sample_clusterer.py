@@ -30,12 +30,20 @@ def main():
           f"{len(defect_df_dev.ac.unique())} in dev and {len(defect_df_test.ac.unique())} in test.")
     print(f"The 3rd defect text for dev : {defect_df_dev.iloc[2, defect_df_dev.columns.get_loc('defect_description')]}")
 
-    # show how a dummy clusterer can be evaluated
+    # show how a dummy clusterer can be evaluated and further shows ahow pandas can be used
     test_predictions = find_recurrent_defects(defect_df_test)
     eval_results = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
 
 
 def find_recurrent_defects(defect_df):
+    """
+    Finds recurrent defects.
+    :param defect_df: The defect dataframe for which we try to find recurrent defects.
+    :return: A simple list of strings indicating the cluster each defect is in, e.g. ['a', 'b', 'red', 'yo', ...].
+             If a given defect is not in a cluster, None is returned for that index, e.g. ['a', 'b', None, 'red', ...].
+             The list of clusters is in the same order as the defects in the input dataframe. The cluster names are
+             arbitrary, and can be anything.
+    """
     return None
 
 
