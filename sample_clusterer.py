@@ -2,6 +2,7 @@
 Sample program to show how to load the data and how to evaluate an algorithm.
 """
 import argparse
+import arpi_evaluator
 import pandas as pd
 import pickle
 import sys
@@ -27,6 +28,15 @@ def main():
     print(defect_df_train.head())
     print(f"\nThere are {len(defect_df_train.ac.unique())} unique aircrafts in train, "
           f"{len(defect_df_dev.ac.unique())} in dev and {len(defect_df_test.ac.unique())} in test.")
+    print(f"The 3rd defect text for dev : {defect_df_dev.iloc[2, defect_df_dev.columns.get_loc('defect_description')]}")
+
+    # show how a dummy clusterer can be evaluated
+    test_predictions = find_recurrent_defects(defect_df_test)
+    eval_results = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
+
+
+def find_recurrent_defects(defect_df):
+    return None
 
 
 if __name__ == '__main__':
