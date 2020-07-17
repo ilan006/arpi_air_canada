@@ -43,7 +43,7 @@ def main():
 
     cols: list = defect_df_full.columns.tolist()
 
-    for col_label in [proper_order[i] for i in range(len(proper_order) - 1, 0, -1) if proper_order[i] in cols]:
+    for col_label in [proper_order[i] for i in range(len(proper_order) - 1, -1, -1) if proper_order[i] in cols]:
         cols.remove(col_label)
         cols.insert(0, col_label)
 
