@@ -92,7 +92,7 @@ def main():
     print("Fixing small stuff...", file=sys.stderr)
     defect_df.replace({'MEL_CALENDAR_DAYS_FLAG': "NO"}, {'MEL_CALENDAR_DAYS_FLAG': "N"}, inplace=True)
     defect_df.columns = map(str.lower, defect_df.columns)
-    trax_df.columns = map(str.lower, trax_df.columns)
+    trax_df.columns = map(lambda x: x.lower().replace(' ', '_').replace('-', '_'), trax_df.columns)
 
     print(defect_df.dtypes)
     print(defect_df.head())
