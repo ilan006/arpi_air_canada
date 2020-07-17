@@ -47,9 +47,10 @@ def main():
         cols.remove(col_label)
         cols.insert(0, col_label)
 
+    defect_df_full = defect_df_full[cols]
+
     print("Writing...", file=sys.stderr)
     pickle.dump([defect_df_full, ata_df, mel_df, trax_df], open(output_file, 'wb'))
-
     print("Done!", file=sys.stderr)
 
 
