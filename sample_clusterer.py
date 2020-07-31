@@ -34,14 +34,16 @@ def main():
     print(f"\nThere are {len(defect_df_train.ac.unique())} unique aircrafts in train, "
           f"{len(defect_df_dev.ac.unique())} in dev and {len(defect_df_test.ac.unique())} in test.")
 
-    # show how to find fields
-    print(f"The 3rd defect for dev: {defect_df_dev.loc[2]}")
+    # show how to find fields by integer indices or by id
+    print(f"The 3rd defect for dev: {defect_df_dev.iloc[2]}")
 
     description_column_index = defect_df_dev.columns.get_loc('defect_description')
     print("The 3rd defect for dev (only text portion): "
           f"{defect_df_dev.iloc[2, description_column_index]}")
 
-    print(f"Lookup a defect by id, then field: {defect_df_train.loc['L-5747551-1']['ac']}")
+    print(f"\nLookup a defect by id (L-5747551-1), then field (ac): {defect_df_train.loc['L-5747551-1']['ac']}")
+    print(f"Is the value L-5747551-1 present in train?: {'L-5747551-1' in defect_df_train}")
+    print(f"Is the value L-5747551-1 present in test?: {'L-5747551-1' in defect_df_test}")
 
     # print(defect_df_dev.info())  # also fun
 
@@ -107,7 +109,9 @@ def find_recurrent_defects_naively(defect_df):
             cluster_map[cluster_label] = cluster_map.get(cluster_label, set())
             cluster_map[cluster_label].add(labels[i])
 
-        result = list(cluster_map.values())
+        ac_result = list(cluster_map.values())
+
+    result = []
 
     return result
 
