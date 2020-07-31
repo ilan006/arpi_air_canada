@@ -8,7 +8,7 @@ This code:
 To prepare the data, the following recipe was used, starting from the original data set in Excel form, to produce the 
 final dataset used in the workshop (`aircan-data-split-clean.pkl` and the equivalent `aircan-data-split-clean.xlsx`).
 
-
+The data split was 82.5% train, 7.3% dev, 10.2% test.
 
 ```
 export INPUT_DIR=/your/input/directory
