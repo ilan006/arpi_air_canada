@@ -33,13 +33,17 @@ def main():
     print(defect_df_train.head())
     print(f"\nThere are {len(defect_df_train.ac.unique())} unique aircrafts in train, "
           f"{len(defect_df_dev.ac.unique())} in dev and {len(defect_df_test.ac.unique())} in test.")
-    print(f"The 3rd defect text for dev : {defect_df_dev.iloc[2, defect_df_dev.columns.get_loc('defect_description')]}")
 
-    # show how to lookup a value in a dataframe
-    print("\n")
-    #TODO
+    # show how to find fields
+    print(f"The 3rd defect for dev: {defect_df_dev.loc[2]}")
 
-    #TODO: remove defects with null id, and reported_datetime that is empty
+    description_column_index = defect_df_dev.columns.get_loc('defect_description')
+    print("The 3rd defect for dev (only text portion): "
+          f"{defect_df_dev.iloc[2, description_column_index]}")
+
+    print(f"Lookup a defect by id, then field: {defect_df_train.loc['L-5747551-1']['ac']}")
+
+    # print(defect_df_dev.info())  # also fun
 
     # show how a dummy clusterer can be evaluated and further shows how pandas can be used
     print("\nPredicting clusters...\n")
@@ -51,10 +55,10 @@ def main():
 
 def find_recurrent_defects_naively(defect_df):
     """
-    Finds recurrent defects (naive k-means algorithm to show how to proceed with the data).
+    Finds recurrent defects (naive algorithm to show how to proceed with the data).
 
     :param defect_df: The defect dataframe for which we try to find recurrent defects.
-    :return:
+    :return: A result datastructure in the format expected for evaluation.
     """
 
     # we regroup defects by aircraft ('ac') since a given defect cannot be recurrent across different aircraft
@@ -65,7 +69,7 @@ def find_recurrent_defects_naively(defect_df):
         print(f"Aircraft {name} has {len(ac_group)} defects reported.")
 
         labels = []  # we prepare the labels for each defect, in the order we encounter them
-        feature_matrix = np.zeros((len(ac_group), 2))  # we have only 2 features: chapter and timestamp
+        feature_matrix = np.zeros((len(ac_group), 2))  # we have only 2 features: chapter and timestamp, very improvable
 
         # we can then iterate over all rows of the data and use the fields we want!
         row_number = 0
