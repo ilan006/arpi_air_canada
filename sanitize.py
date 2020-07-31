@@ -83,10 +83,11 @@ def main():
     defect_df = convert_datetime(defect_df, ['DEFER_TO_DATE', 'DEFER_TO_HOUR', 'DEFER_TO_MINUTE'], 'DEFER_TO_DATETIME')
     defect_df = convert_datetime(defect_df, ['RESOLVED_DATE', 'RESOLVED_HOUR', 'RESOLVED_MINUTE'], 'RESOLVED_DATETIME')
 
+    defect_df = defect_df[defect_df.DEFECT.notnull() & defect_df.REPORTED_DATETIME.notnull()]
+
     if corrupted_dataset:
         # filter out spurious entries
         print("Filtering out invalid entries...", file=sys.stderr)
-        defect_df = defect_df[defect_df.DEFECT.notnull() & defect_df.REPORTED_DATETIME.notnull()]
         trax_df.drop(trax_df.columns[13:21], axis=1, inplace=True)
 
     print("Fixing small stuff...", file=sys.stderr)
