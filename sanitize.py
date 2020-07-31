@@ -95,6 +95,10 @@ def main():
     defect_df.columns = map(str.lower, defect_df.columns)
     trax_df.columns = map(lambda x: x.lower().replace(' ', '_').replace('-', '_'), trax_df.columns)
 
+    print("Indexing...", file=sys.stderr)
+    ids = defect_df[['defect_type', 'defect', 'defect_item']].apply(lambda x: f'{x[0]}-{str(x[1])}-{str(x[2])}', axis=1)
+    defect_df.index = ids
+
     print(defect_df.dtypes)
     print(defect_df.head())
 
