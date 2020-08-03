@@ -42,17 +42,18 @@ def main():
           f"{defect_df_dev.iloc[2, description_column_index]}")
 
     print(f"\nLookup a defect by id (L-5747551-1), then field (ac): {defect_df_train.loc['L-5747551-1']['ac']}")
-    print(f"Is the value L-5747551-1 present in train?: {'L-5747551-1' in defect_df_train}")
-    print(f"Is the value L-5747551-1 present in test?: {'L-5747551-1' in defect_df_test}")
+    print(f"Is the value L-5747551-1 present in train?: {'L-5747551-1' in defect_df_train.index}")
+    print(f"Is the value L-5747551-1 present in dev?: {'L-5747551-1' in defect_df_test.index}")
 
     # print(defect_df_dev.info())  # also fun
 
     # show how a dummy clusterer can be evaluated and further shows how pandas can be used
-    print("\nPredicting clusters...\n")
+    print("\nPredicting recurrence clusters...\n")
     test_predictions = find_recurrent_defects_naively(defect_df_test)
 
-    print("\nEvaluating clusters.")
-    eval_results = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
+    print("\nEvaluation\n")
+    score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
+    print(f"dummy_system v zero\t{score * 100}%\tThis system stinks!")
 
 
 def find_recurrent_defects_naively(defect_df):
@@ -62,6 +63,7 @@ def find_recurrent_defects_naively(defect_df):
     :param defect_df: The defect dataframe for which we try to find recurrent defects.
     :return: A result datastructure in the format expected for evaluation.
     """
+    result = []
 
     # we regroup defects by aircraft ('ac') since a given defect cannot be recurrent across different aircraft
     grouped_by_ac = defect_df.groupby('ac')
@@ -71,7 +73,7 @@ def find_recurrent_defects_naively(defect_df):
         print(f"Aircraft {name} has {len(ac_group)} defects reported.")
 
         labels = []  # we prepare the labels for each defect, in the order we encounter them
-        feature_matrix = np.zeros((len(ac_group), 2))  # we have only 2 features: chapter and timestamp, very improvable
+        feature_matrix = np.zeros((len(ac_group), 2))  # we have only 2 features: chapter and timestamp, ofc improveable
 
         # we can then iterate over all rows of the data and use the fields we want!
         row_number = 0
@@ -97,19 +99,20 @@ def find_recurrent_defects_naively(defect_df):
             feature_matrix[row_number] = (cur_chapter, cur_reported_hours)
             row_number += 1
 
-        # our simple algorithm performs agglomerative clustering - this is not important for the purpose of this demo
+        # our simple algorithm performs agglomerative clustering - this is not important, it's just a demo
         clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',
                                                    distance_threshold=.1, linkage='average')
         dist_matrix = pairwise_distances(feature_matrix, feature_matrix, metric=custom_distance_fun)
         clusters = clustering_model.fit_predict(dist_matrix)
 
-        # we convert the clusters array([ 192,  192, 1193, ...,  247,  247,  357]) into a result data structure
+        # we convert the clusters array([192,  192, 1193, ...,  247,  247,  357]) into a result data structure
         cluster_map = {}  # a mapping from cluster name to list of defects
         for i, cluster_label in enumerate(clusters):
             cluster_map[cluster_label] = cluster_map.get(cluster_label, set())
             cluster_map[cluster_label].add(labels[i])
 
         ac_result = list(cluster_map.values())
+        result += ac_result
 
     result = []
 
