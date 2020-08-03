@@ -17,7 +17,7 @@ def main():
     # parse args
     parser = argparse.ArgumentParser("A sample program.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
-    parser.add_argument("output_file", help="An output file.")
+    parser.add_argument("output_file", help="An output file where evaluation details will be written.")
     args = parser.parse_args()
 
     # read data; this will load the data as 6 pandas DataFrames, which allow fast manipulations and (slower) iterations
