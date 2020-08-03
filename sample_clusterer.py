@@ -55,6 +55,10 @@ def main():
     score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
     print(f"dummy_system v zero\t{score * 100}%\tThis system stinks!")
 
+    print(f"Dumping debug info in file {args.output_file}")
+    with open(args.output_file, 'wt', encoding='utf-8') as fout:
+        arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
+
 
 def find_recurrent_defects_naively(defect_df):
     """
@@ -113,8 +117,6 @@ def find_recurrent_defects_naively(defect_df):
 
         ac_result = list(cluster_map.values())
         result += ac_result
-
-    result = []
 
     return result
 
