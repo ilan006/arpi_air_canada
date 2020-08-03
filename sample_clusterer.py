@@ -53,7 +53,7 @@ def main():
 
     print("\nEvaluation\n")
     score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
-    print(f"dummy_system v zero\t{score * 100}%\tThis system stinks!")
+    print(f"dummy system zero\t{score * 100:.2f}%\tThis system stinks!")
 
     print(f"Dumping debug info in file {args.output_file}")
     with open(args.output_file, 'wt', encoding='utf-8') as fout:
