@@ -4,9 +4,17 @@ This code:
 * shows how to load the data and work with the pandas [library](http://pandas.pydata.org/) to manipulate the data
 * shows how to code a dummy clusterer and how to evaluate it 
 
+## Sample code
+
+A sample clusterer is provided in the file `sample_clusterer.py` Its sole purpose is to show how to load the data 
+and manipulate it, then cluster it and evaluate your algorithm. Feel free to do whatever you like with this.
+The evaluation framework can also be modified! 
+
 ## Data preparation
 To prepare the data, the following recipe was used, starting from the original data set in Excel form, to produce the 
 final dataset used in the workshop (`aircan-data-split-clean.pkl` and the equivalent `aircan-data-split-clean.xlsx`).
+
+**You don't have to rerun this, just use the pickle provided.**
 
 The data split was 82.5% train, 7.3% dev, 10.2% test.
 
@@ -22,8 +30,6 @@ python combine_datasets.py ${OUTPUT_DIR}/aircan-data-2018-clean.pkl ${OUTPUT_DIR
 python split_dataset.py  ${OUTPUT_DIR}/aircan-data-full-clean.pkl  ${OUTPUT_DIR}/aircan-data-split-clean.pkl
 python dump_to_excel.py  ${OUTPUT_DIR}/aircan-data-split-clean.pkl ${OUTPUT_DIR}/aircan-data-split-clean.xlsx
 ```
-
-## Sample code
 
 ---
 Fabrizio G
