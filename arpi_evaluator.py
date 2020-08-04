@@ -14,12 +14,11 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
     to evaluate the clustering predictions.
 
-    This is another para.
-
     :param ref_df: The reference dataframe.
     :param predictions: The predictions. Their format is an iterable collection of sets of defect labels belonging to
                         the same cluster, i.e.
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
+                        Clusters containing a single element are ignored during evaluation.
     :return: A tuple:
         score from 0 (worst) to 1 (best)
         additional debug information dictionary
