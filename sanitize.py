@@ -3,7 +3,6 @@ This script sanitizes the workshop data by identifying problems, filtering out i
 fields with sensible types.
 """
 import math
-
 import pandas as pd
 import pickle
 import sys
@@ -38,6 +37,35 @@ def convert_datetime(df, column_list: list, new_column_name):
     df.drop(column_list, axis=1, inplace=True)
 
     return df
+
+
+def sanitize_ata(ata_df):
+    ata_dict = {}
+
+    for row in ata_df.itertuples(index=False):
+        cur_desc = ata_dict.get((row.chapter, row.section), '')
+        if row.description.lower() not in cur_desc:
+            if len(cur_desc):
+                cur_desc += ', ' + row.description.lower()
+            else:
+                cur_desc = row.description.lower()
+        ata_dict[(row.chapter, row.section)] = cur_desc.strip()
+
+    col1 = [x[0] for x in ata_dict.keys()]
+    col2 = [x[1] for x in ata_dict.keys()]
+    col3 = [ata_dict[x] for x in ata_dict.keys()]
+
+    result = pd.DataFrame({'chapter': col1, 'section': col2, 'description': col3})
+    result.set_index(['chapter', 'section'], inplace=True, verify_integrity=True)
+
+    return result
+
+
+def sanitize_mel(mel_df):
+    mel_df.drop_duplicates(['mel_number'], inplace=True)
+    mel_df.sort_values(by=['mel_number'], inplace=True)
+    mel_df.set_index(['mel_number'], inplace=True, verify_integrity=True)
+    return mel_df
 
 
 def main():
@@ -89,6 +117,9 @@ def main():
         # filter out spurious entries
         print("Filtering out invalid entries...", file=sys.stderr)
         trax_df.drop(trax_df.columns[13:21], axis=1, inplace=True)
+    else:
+        ata_df = sanitize_ata(ata_df)
+        mel_df = sanitize_mel(mel_df)
 
     print("Fixing small stuff...", file=sys.stderr)
     defect_df.replace({'MEL_CALENDAR_DAYS_FLAG': "NO"}, {'MEL_CALENDAR_DAYS_FLAG': "N"}, inplace=True)
