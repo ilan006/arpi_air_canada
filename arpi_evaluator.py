@@ -3,7 +3,6 @@ This script evaluates a candidate clustering given a reference.
 """
 from sklearn.metrics.cluster import adjusted_rand_score
 import pandas as pd
-import sys
 
 NO_CLUSTER_LABEL = -1
 

@@ -39,7 +39,7 @@ def convert_datetime(df, column_list: list, new_column_name):
     return df
 
 
-def sanitize_ata(ata_df):
+def sanitize_ata(ata_df: pd.DataFrame):
     ata_dict = {}
 
     for row in ata_df.itertuples(index=False):
@@ -56,15 +56,15 @@ def sanitize_ata(ata_df):
     col3 = [ata_dict[x] for x in ata_dict.keys()]
 
     result = pd.DataFrame({'chapter': col1, 'section': col2, 'description': col3})
-    result.set_index(['chapter', 'section'], inplace=True, verify_integrity=True)
+    result.set_index(['chapter', 'section'], inplace=True, verify_integrity=True, drop=False)
 
     return result
 
 
-def sanitize_mel(mel_df):
+def sanitize_mel(mel_df: pd.DataFrame):
     mel_df.drop_duplicates(['mel_number'], inplace=True)
     mel_df.sort_values(by=['mel_number'], inplace=True)
-    mel_df.set_index(['mel_number'], inplace=True, verify_integrity=True)
+    mel_df.set_index(['mel_number'], inplace=True, verify_integrity=True, drop=False)
     return mel_df
 
 

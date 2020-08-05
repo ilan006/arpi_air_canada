@@ -6,6 +6,8 @@ import arpi_evaluator
 import numpy as np
 import pandas as pd
 import pickle
+import sys
+import traceback
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import pairwise_distances
 
@@ -22,9 +24,15 @@ def main():
 
     # read data; this will load the data as 6 pandas DataFrames, which allow fast manipulations and (slower) iterations
     # more info on pandas here: https://pandas.pydata.org/
-    with open(args.input_file, 'rb') as fin:
-        [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
-        print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_test)} dev, {len(defect_df_test)} test.")
+    try:
+        with open(args.input_file, 'rb') as fin:
+            [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
+            print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_test)} dev, {len(defect_df_test)} test.")
+    except:
+        print("Loading the pickle failed, this may be due to a pickle/pandas version issue.", file=sys.stderr)
+        print("Recreate the pickle by following the instructions here: https://github.com/rali-udem/arpi_air_canada#data-preparation", file=sys.stderr)
+        print()
+        traceback.print_exc()
 
     # a small demo to show how to manipulate pandas dataframes
     little_demo(defect_df_dev, defect_df_test, defect_df_train, ata_df, mel_df, trax_df)
@@ -37,7 +45,7 @@ def main():
     score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
     print(f"dummy system zero\t{score * 100:.2f}%\tSample system!")
 
-    print(f"Dumping debug info in file {args.output_file}")
+    print(f"\nDumping debug info in file {args.output_file}")
     with open(args.output_file, 'wt', encoding='utf-8') as fout:
         arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
 
@@ -86,7 +94,7 @@ def find_recurrent_defects_naively(defect_df):
 
     # we iterate over each aircraft group, with a tuple (name of aircraft, dataframe for all defects for this aircraft)
     for name, ac_group in grouped_by_ac:
-        print(f"Aircraft {name} has {len(ac_group)} defects reported.")
+        print(f"Working on aircraft {name}, with {len(ac_group)} defects reported.")
 
         labels = []  # we prepare the labels for each defect, in the order we encounter them
         feature_matrix = np.zeros((len(ac_group), 2))  # we have only 2 features: chapter and timestamp, ofc improveable
@@ -118,7 +126,7 @@ def find_recurrent_defects_naively(defect_df):
         # our simple algorithm performs agglomerative clustering - this is not important, it's just a demo
         clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',
                                                    distance_threshold=.1, linkage='average')
-        dist_matrix = pairwise_distances(feature_matrix, feature_matrix, metric=custom_distance_fun)
+        dist_matrix = pairwise_distances(feature_matrix, None, metric=custom_distance_fun)
         clusters = clustering_model.fit_predict(dist_matrix)
 
         # we convert the clusters array([192,  192, 1193, ...,  247,  247,  357]) into a result data structure

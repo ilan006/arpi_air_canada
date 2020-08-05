@@ -17,8 +17,8 @@ def main():
 
     # open with pandas
     print("Reading (this will take a while)...", file=sys.stderr, end=' ', flush=True)
-    data = [pd.read_excel(open(input_file, 'rb'), s, 0) for s in ['Defect Data', 'ATA CH-SEC',
-                                                                  'MEL Code Data', 'Trax Recurrent Data']]
+    data = [pd.read_excel(io=open(input_file, 'rb'), sheet_name=s, header=0)
+            for s in ['Defect Data', 'ATA CH-SEC', 'MEL Code Data', 'Trax Recurrent Data']]
     print("done.", file=sys.stderr)
 
     # write binary
