@@ -22,7 +22,7 @@ The data split was 82.5% train, 7.3% dev, 10.2% test.
 export INPUT_DIR=/your/input/directory
 export OUTPUT_DIR=/your/output/directory
 
-python import_excel.py ${INPUT_DIR}/10-july-2020/IVADO\ Data\ July\ 10\ 2020.xlsx ${OUTPUT_DIR}/aircan-data-2018-raw.pkl`
+python import_excel.py ${INPUT_DIR}/10-july-2020/IVADO\ Data\ July\ 10\ 2020.xlsx ${OUTPUT_DIR}/aircan-data-2018-raw.pkl
 python import_excel.py ${INPUT_DIR}/15-june-2020/IVADO\ Data\ 15\ June\ 2020.xlsx ${OUTPUT_DIR}/aircan-data-2019-raw.pkl
 python sanitize.py ${OUTPUT_DIR}/aircan-data-2018-raw.pkl ${OUTPUT_DIR}/aircan-data-2018-clean.pkl
 python sanitize.py ${OUTPUT_DIR}/aircan-data-2019-raw.pkl ${OUTPUT_DIR}/aircan-data-2019-clean.pkl
