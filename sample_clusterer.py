@@ -9,8 +9,8 @@ import pickle
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import pairwise_distances
 
-BEGINNING_OF_TIME = np.datetime64('1970-01-01T00:00:00')
-TIMEDELTA_HOUR = np.timedelta64(1, 'h')
+__BEGINNING_OF_TIME = np.datetime64('1970-01-01T00:00:00')
+__TIMEDELTA_HOUR = np.timedelta64(1, 'h')
 
 
 def main():
@@ -26,6 +26,24 @@ def main():
         [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
         print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_test)} dev, {len(defect_df_test)} test.")
 
+    # a small demo to show how to manipulate pandas dataframes
+    little_demo(defect_df_dev, defect_df_test, defect_df_train, ata_df, mel_df, trax_df)
+
+    # show how a dummy clusterer can be evaluated and further show how pandas can be used
+    print("\nPredicting recurrence clusters...\n")
+    test_predictions = find_recurrent_defects_naively(defect_df_test)
+
+    print("\nEvaluation\n")
+    score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
+    print(f"dummy system zero\t{score * 100:.2f}%\tSample system!")
+
+    print(f"Dumping debug info in file {args.output_file}")
+    with open(args.output_file, 'wt', encoding='utf-8') as fout:
+        arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
+
+
+def little_demo(defect_df_dev, defect_df_test, defect_df_train, ata_df, mel_df, trax_df):
+
     # show a few things possible with the pandas data frames for those who are not familiar
     print(f"\nThere are {len(defect_df_train.columns)} columns in all 3 defect dataframes, whose names and types are:")
     print(defect_df_train.dtypes)
@@ -36,28 +54,22 @@ def main():
 
     # show how to find fields by integer indices or by id
     print(f"The 3rd defect for dev: {defect_df_dev.iloc[2]}")
-
     description_column_index = defect_df_dev.columns.get_loc('defect_description')
     print("The 3rd defect for dev (only text portion): "
           f"{defect_df_dev.iloc[2, description_column_index]}")
-
     print(f"\nLookup a defect by id (L-5747551-1), then field (ac): {defect_df_train.loc['L-5747551-1']['ac']}")
     print(f"Is the value L-5747551-1 present in train?: {'L-5747551-1' in defect_df_train.index}")
     print(f"Is the value L-5747551-1 present in dev?: {'L-5747551-1' in defect_df_test.index}")
 
-    # print(defect_df_dev.info())  # also fun
+    # print(defect_df_train.info())  # also fun
 
-    # show how a dummy clusterer can be evaluated and further shows how pandas can be used
-    print("\nPredicting recurrence clusters...\n")
-    test_predictions = find_recurrent_defects_naively(defect_df_test)
+    # you can also lookup various info in the ata, mel and trax dataframes
+    sample_defect = defect_df_test.loc['L-5531638-1']
+    ata_key = (sample_defect.chapter, sample_defect.section)
+    ata_value = ata_df.loc[ata_key]
+    print(f"Description of chapter/section {ata_key} is '{ata_value.description}'")
 
-    print("\nEvaluation\n")
-    score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
-    print(f"dummy system zero\t{score * 100:.2f}%\tThis system stinks!")
-
-    print(f"Dumping debug info in file {args.output_file}")
-    with open(args.output_file, 'wt', encoding='utf-8') as fout:
-        arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
+    print(f"Is MEL number {sample_defect.mel_number} in mel table?: {sample_defect.mel_number in mel_df}")
 
 
 def find_recurrent_defects_naively(defect_df):
@@ -81,7 +93,7 @@ def find_recurrent_defects_naively(defect_df):
 
         # we can then iterate over all rows of the data and use the fields we want!
         row_number = 0
-        for _, row in ac_group.iterrows():  # index is the row number and row is the data itself
+        for index, row in ac_group.iterrows():  # index is the row index and row is the data itself (a series)
             cur_type = row['defect_type']  # e.g. C, E or L
             cur_defect = row['defect']  # an int
             cur_item = row['defect_item']  # an int
@@ -97,7 +109,7 @@ def find_recurrent_defects_naively(defect_df):
             cur_reported_date = row['reported_datetime']
 
             # we convert the date to hours
-            cur_reported_hours = (cur_reported_date - BEGINNING_OF_TIME) // TIMEDELTA_HOUR
+            cur_reported_hours = (cur_reported_date - __BEGINNING_OF_TIME) // __TIMEDELTA_HOUR
 
             # we add the features to the feature matrix
             feature_matrix[row_number] = (cur_chapter, cur_reported_hours)
