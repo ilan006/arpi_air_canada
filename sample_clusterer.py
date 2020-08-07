@@ -29,8 +29,12 @@ def main():
             [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
             print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_test)} dev, {len(defect_df_test)} test.")
     except:
-        print("Loading the pickle failed, this may be due to a pickle/pandas version issue.", file=sys.stderr)
-        print("Recreate the pickle by following the instructions here: https://github.com/rali-udem/arpi_air_canada#data-preparation", file=sys.stderr)
+        print("Loading the pickle failed.", file=sys.stderr)
+
+        if pd.__version__ != '1.1.0':
+            print("You can upgrade your version of pandas with the command 'pip install 'pandas==1.1.0' --force-reinstall'.", file=sys.stderr)
+
+        print("You can recreate the pickle by following the instructions here: https://github.com/rali-udem/arpi_air_canada#data-preparation", file=sys.stderr)
         print()
         traceback.print_exc()
 

@@ -52,6 +52,13 @@ def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
 
 
 def dump_debug_info(defect_df: pd.DataFrame, debug_info, fout):
-    """Dumps debug info in fout for analyzing results"""
+    """
+    Dumps debug info in fout for analyzing results
+
+    :param defect_df: The defect dataframe used for prediction/evaluation.
+    :param debug_info: The debug info returned by function evaluate_recurrent_defects
+    :param fout: The stream onto we write the debug info.
+    :return:
+    """
     for id, pred, ref in zip(defect_df.index, debug_info['pred_clusters'], debug_info['ref_clusters']):
         print(f"{id}\t{str(pred)}\t{str(ref)}", file=fout)
