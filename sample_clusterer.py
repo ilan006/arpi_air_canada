@@ -79,7 +79,7 @@ def little_demo(defect_df_dev, defect_df_test, defect_df_train, ata_df, mel_df, 
     sample_defect = defect_df_test.loc['L-5531638-1']
     ata_key = (sample_defect.chapter, sample_defect.section)
     ata_value = ata_df.loc[ata_key]
-    print(f"Description of chapter/section {ata_key} is '{ata_value.description}'")
+    print(f"Description of ATA chapter/section {ata_key} is '{ata_value.description}'")
 
     print(f"Is MEL number {sample_defect.mel_number} in mel table?: {sample_defect.mel_number in mel_df}")
 
