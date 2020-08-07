@@ -23,8 +23,11 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
         additional debug information dictionary
     """
 
-    # extract cluster assignments from the reference
-    ref_clusters = list(ref_df.recurrent.fillna(NO_CLUSTER_LABEL))
+    # extract cluster assignments from the reference, and remove clusters with a single member, which are not clusters
+    filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)
+    duplicate_df = filled_df.duplicated(keep=False)
+    filled_df.where(duplicate_df, NO_CLUSTER_LABEL, inplace=True)
+    ref_clusters = filled_df
 
     # extract cluster assignments from the predictions in the same order as those from the ref
     pred_clusters = convert_cluster_labels_to_seq(ref_df, predictions)
@@ -53,12 +56,13 @@ def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
 
 def dump_debug_info(defect_df: pd.DataFrame, debug_info, fout):
     """
-    Dumps debug info in fout for analyzing results
+    Dumps debug info in fout for analyzing results. Lines will have format:
+    defect_label    predicted_cluster   reference_cluster
 
     :param defect_df: The defect dataframe used for prediction/evaluation.
     :param debug_info: The debug info returned by function evaluate_recurrent_defects
     :param fout: The stream onto we write the debug info.
-    :return:
+    :return: Nothing.
     """
     for id, pred, ref in zip(defect_df.index, debug_info['pred_clusters'], debug_info['ref_clusters']):
         print(f"{id}\t{str(pred)}\t{str(ref)}", file=fout)
