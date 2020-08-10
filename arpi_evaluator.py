@@ -19,7 +19,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
                         Clusters containing a single element are ignored during evaluation.
     :return: A tuple:
-        score from 0 (worst) to 1 (best)
+        ARI (adjusted rand index) score from 0 (worst) to 1 (best)
         additional debug information dictionary
     """
 
@@ -34,7 +34,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
 
     # evaluate
     score = adjusted_rand_score(ref_clusters, pred_clusters)
-    return score, {'score': score, 'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters}
+    return score, {'ari_score': score, 'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters}
 
 
 def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):

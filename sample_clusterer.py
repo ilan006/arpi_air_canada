@@ -4,6 +4,7 @@ Sample program to show how to load the data and how to evaluate a (dummy) algori
 import argparse
 import arpi_evaluator
 import numpy as np
+import os
 import pandas as pd
 import pickle
 import sys
@@ -22,6 +23,10 @@ def main():
     parser.add_argument("output_file", help="An output file where evaluation details will be written.")
     args = parser.parse_args()
 
+    if not os.path.exists(args.input_file):
+        print(f"Invalid input file: {args.input_file}", file=sys.stderr)
+        sys.exit(1)
+
     # read data; this will load the data as 6 pandas DataFrames, which allow fast manipulations and (slower) iterations
     # more info on pandas here: https://pandas.pydata.org/
     try:
@@ -32,9 +37,11 @@ def main():
         print("Loading the pickle failed.", file=sys.stderr)
 
         if pd.__version__ != '1.1.0':
-            print("You can upgrade your version of pandas with the command 'pip install 'pandas==1.1.0' --force-reinstall'.", file=sys.stderr)
+            print("""You can upgrade your version of pandas with the command 
+                  'pip install 'pandas==1.1.0' --force-reinstall'.""", file=sys.stderr)
 
-        print("You can recreate the pickle by following the instructions here: https://github.com/rali-udem/arpi_air_canada#data-preparation", file=sys.stderr)
+        print("""You can also recreate the pickle by following the instructions here: 
+                 https://github.com/rali-udem/arpi_air_canada#data-preparation""", file=sys.stderr)
         print()
         traceback.print_exc()
 
