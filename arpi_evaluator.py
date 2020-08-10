@@ -19,7 +19,8 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
                         Clusters containing a single element are ignored during evaluation.
     :return: A tuple:
-        ARI (adjusted rand index) score from 0 (worst) to 1 (best)
+        ARI (adjusted rand index) score. Similarity score between -1.0 and 1.0. Random labelings have an ARI close to 0.
+                                         1.0 stands for perfect match.
         additional debug information dictionary
     """
 
