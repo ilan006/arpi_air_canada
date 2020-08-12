@@ -53,10 +53,11 @@ def main():
     test_predictions = find_recurrent_defects_naively(defect_df_test)
 
     print("\nEvaluation\n")
-    ari_score, eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
-    print(f"System name/participant\tARI Score\tComment")
-    print("-" * 50)
-    print(f"Dummy System Zero\t{ari_score:.3f}\tSample system!")
+    eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, test_predictions)
+    print("System name\tHomog.\tCompl.\tV-meas.\tARI\tComment")
+    print("%s\t%.2f\t%.2f\t%.2f\t%.3f\t%s" % ('Dummy System', eval_debug_info['homogeneity'],
+                                              eval_debug_info['completeness'], eval_debug_info['v_measure'],
+                                              eval_debug_info['ari_score'], 'Sample system only.'))
 
     print(f"\nDumping debug info in file {args.output_file}")
     with open(args.output_file, 'wt', encoding='utf-8') as fout:
