@@ -29,7 +29,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
         homogeneity - A clustering result satisfies homogeneity if all of its predicted clusters contain only data
                       points that are clustered in the reference.
         completeness - A clustering result satisfies completeness if all the data points that are members of the
-                       same reference cluster are elements of the same predicted cluster.
+                       same reference cluster are found in the same predicted cluster.
         v_measure - harmonic mean of homogeneity and completeness
         pred_clusters - a list of predicted cluster labels, useful for debug
         ref_clusters - a list of reference cluster labels, useful for debug
