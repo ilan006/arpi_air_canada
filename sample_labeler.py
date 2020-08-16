@@ -6,10 +6,9 @@ import traceback
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import f1_score
 import os
 import sys
-
-from sklearn.metrics import precision_recall_fscore_support, classification_report
 
 
 def main():
@@ -49,7 +48,7 @@ def main():
     trax_df_clean['label'] = trax_df_clean[['rec_ch', 'rec_sec']].apply(lambda data: f"{data['rec_ch']}-{data['rec_sec']}", axis=1)
     train, validate, test = np.split(trax_df_clean.sample(frac=1, random_state=42),
                                      [int(.6 * len(trax_df_clean)), int(.8 * len(trax_df_clean))])
-    print(f"Trax split is: {len(train)} train, {len(validate)} dev, {len(test)} test.")
+    print(f"Trax dataset split is: {len(train)} train, {len(validate)} dev, {len(test)} test.")
 
     # let us try a little classifier based on tf-idf, which even ignores the hierarchical nature of the ATA labels (chapter / section)
     tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='utf-8', ngram_range=(1, 2), stop_words='english')
@@ -58,8 +57,9 @@ def main():
     model = RandomForestClassifier(n_estimators=200, max_depth=3, random_state=42)
     model.fit(features, labels)
     predictions = model.predict(tfidf.transform(test.defect_description.tolist()).toarray())
-    report = classification_report(test.label, predictions)
-    print(report)
+
+    f1 = f1_score(test.label, predictions, average='micro')
+    print(f"F1 score on test is {f1 * 100:.1f}%")
 
 
 if __name__ == '__main__':

@@ -8,13 +8,16 @@ This code:
 
 A sample clusterer is provided in the file `sample_clusterer.py` Its sole purpose is to show how to load the data 
 and manipulate it, then cluster it and evaluate your algorithm. Feel free to do whatever you like with this.
-The evaluation framework can also be modified! 
+The evaluation framework can also be modified!
+
+Similarly, for labeling, take a look at `sample_labeler.py` (and also at `sample_clusterer.py` which shows how to 
+use pandas.) 
 
 ## Data preparation
 To prepare the data, the following recipe was used, starting from the original data set in Excel form, to produce the 
 final dataset used in the workshop (`aircan-data-split-clean.pkl` and the equivalent `aircan-data-split-clean.xlsx`).
 
-**You don't have to rerun this, just use the pickle provided.**
+**You don't have to rerun this, just use the pickle provided, unless you have difficulty loading the pickle.**
 
 The data split was 82.5% train, 7.3% dev, 10.2% test.
 
