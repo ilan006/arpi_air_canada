@@ -34,6 +34,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
         v_measure - harmonic mean of homogeneity and completeness
         pred_clusters - a list of predicted cluster labels, useful for debug
         ref_clusters - a list of reference cluster labels, useful for debug
+        remove_ata_zero_section - copy of argument remove_ata_zero_section for this function
     """
 
     filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)  # when there is no recurrent id, define as not clustered
@@ -41,7 +42,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
     if remove_ata_zero_section:
         filled_df.where(ref_df.section == 0, NO_CLUSTER_LABEL, inplace=True)
 
-    # remove clusters with a single member, which are not clusters
+    # remove clusters with a single member, which are not clusters at all
     duplicate_df = filled_df.duplicated(keep=False)
     filled_df.where(duplicate_df, NO_CLUSTER_LABEL, inplace=True)
     ref_clusters = filled_df
