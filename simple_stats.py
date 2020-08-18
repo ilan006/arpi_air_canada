@@ -23,6 +23,8 @@ def text_stats(series, fout, exclude_word_list):
             continue
         txt = txt.replace(",", "")
         txt = txt.replace(".", "")
+        txt = txt.replace("(", "")
+        txt = txt.replace(")", "")
         for token in txt.split(' '):
             if not no_letter_pattern.match(token) and token.lower() not in exclude_list:
                 total += 1
