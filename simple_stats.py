@@ -42,7 +42,7 @@ args = parser.parse_args()
 
 with open(args.input_file, 'rb') as fin:
     [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
-    print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_test)} dev, {len(defect_df_test)} test.")
+    print(f"Read # samples: {len(defect_df_train)} train, {len(defect_df_dev)} dev, {len(defect_df_test)} test.")
 
 defect_df_full = pd.concat([defect_df_train, defect_df_test, defect_df_dev], sort=False)
 

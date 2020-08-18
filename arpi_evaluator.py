@@ -8,9 +8,9 @@ import pandas as pd
 NO_CLUSTER_LABEL = -1
 
 
-def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
+def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=True):
     """
-    Uses sklearn's adjusted Rand Index, homogeneity, completeness and v-measure
+    Uses sklearn's Adjusted Rand Index, homogeneity, completeness and v-measure
     to evaluate the clustering predictions.
 
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
@@ -23,6 +23,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
                         the same cluster, i.e.
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
                         Clusters containing a single element are ignored during evaluation.
+    :param remove_ata_zero_section: Remove from the reference all clusters for which the ATA section is 0 (recommended)
     :return: A dict with the following keys
         ari_score - Adjusted Rand Index, similarity score between -1.0 and 1.0. Random labelings have an ARI close to 0.
                                          1.0 stands for perfect match.
@@ -33,10 +34,15 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
         v_measure - harmonic mean of homogeneity and completeness
         pred_clusters - a list of predicted cluster labels, useful for debug
         ref_clusters - a list of reference cluster labels, useful for debug
+        remove_ata_zero_section - copy of argument remove_ata_zero_section for this function
     """
 
-    # extract cluster assignments from the reference, and remove clusters with a single member, which are not clusters
-    filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)
+    filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)  # when there is no recurrent id, define as not clustered
+
+    if remove_ata_zero_section:
+        filled_df.where(ref_df.section == 0, NO_CLUSTER_LABEL, inplace=True)
+
+    # remove clusters with a single member, which are not clusters at all
     duplicate_df = filled_df.duplicated(keep=False)
     filled_df.where(duplicate_df, NO_CLUSTER_LABEL, inplace=True)
     ref_clusters = filled_df
@@ -50,7 +56,8 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions):
 
     return {'ari_score': ari_score, 'homogeneity': homogeneity,
             'completeness': completeness, 'v_measure': v_measure_score,
-            'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters}
+            'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters,
+            'remove_ata_zero_section': remove_ata_zero_section}
 
 
 def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
