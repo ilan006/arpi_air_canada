@@ -25,8 +25,11 @@ def text_stats(series, fout, exclude_word_list):
             continue
         txt = txt.replace(",", "")
         txt = txt.replace(".", "")
+        txt = txt.replace(";", "")
         txt = txt.replace("(", "")
         txt = txt.replace(")", "")
+        txt = txt.replace("[", "")
+        txt = txt.replace("]", "")
         for token in txt.split(' '):
             if not no_letter_pattern.match(token) and token.lower() not in exclude_list and not seat_number_pattern1.match(token) and not seat_number_pattern2.match(token):
                 total += 1
