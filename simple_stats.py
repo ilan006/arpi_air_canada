@@ -8,6 +8,8 @@ import re
 import sys
 
 no_letter_pattern = re.compile("^[^a-zA-Z]*$")
+seat_number_pattern1 = re.compile("^[1-9][0-9]?[a-zA-Z]$")
+seat_number_pattern2 = re.compile("^[a-zA-Z][1-9][0-9]?$")
 def text_stats(series, fout, exclude_word_list):
     exclude_list = set()
     if exclude_word_list is not None:
@@ -26,7 +28,7 @@ def text_stats(series, fout, exclude_word_list):
         txt = txt.replace("(", "")
         txt = txt.replace(")", "")
         for token in txt.split(' '):
-            if not no_letter_pattern.match(token) and token.lower() not in exclude_list:
+            if not no_letter_pattern.match(token) and token.lower() not in exclude_list and not seat_number_pattern1.match(token) and not seat_number_pattern2.match(token):
                 total += 1
                 nb = vocabulary.get(token, 0)
                 vocabulary[token] = nb + 1
