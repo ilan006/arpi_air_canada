@@ -9,10 +9,13 @@ from sklearn.metrics import f1_score
 
 
 def main():
+    # normalization possibilities
+    NORMALIZATION_FUNCTIONS = {'none': lambda x: x, 'dummy': dummy_normalization}  # add your funcs here
+
     # parse args
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
-    parser.add_argument("normalization_method", help="Normalization method.", choices=['none', 'dummy'])
+    parser.add_argument("normalization_method", help="Normalization method.", choices=NORMALIZATION_FUNCTIONS.keys())
     args = parser.parse_args()
 
     with open(args.input_file, 'rb') as fin:
@@ -26,8 +29,11 @@ def main():
     trax_df_clean['label'] = trax_df_clean[['rec_ch', 'rec_sec']].apply(lambda data: f"{data['rec_ch']}-{data['rec_sec']}", axis=1)
 
     # normalize text
-    normalization_func_dict = {'none': lambda x: x, 'dummy': dummy_normalization}  # add your funcs here
-    normalization_function = normalization_func_dict[args.normalization_method]
+    if args.normalization_method in NORMALIZATION_FUNCTIONS:
+        normalization_function = NORMALIZATION_FUNCTIONS[args.normalization_method]
+    else:
+        raise ValueError("Please add your normalization function in the dictionary NORMALIZATION_FUNCTIONS.")
+
     trax_df_clean['normalized_desc'] = trax_df_clean.defect_description.apply(normalization_function)
 
     # split corpus
@@ -48,7 +54,7 @@ def main():
 
 
 def dummy_normalization(text: str):
-    return ' '.join(text.split(r'[\.;,-]')[0:3])
+    return ' '.join(text.split(r'[\.;, -\(\)]'))
 
 
 if __name__ == '__main__':
