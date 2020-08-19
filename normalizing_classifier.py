@@ -12,6 +12,7 @@ def main():
     # parse args
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
+    parser.add_argument("normalization_method", help="Normalization method.", choices=['none', 'dummy'])
     args = parser.parse_args()
 
     with open(args.input_file, 'rb') as fin:
@@ -23,20 +24,31 @@ def main():
     trax_df_clean = trax_df_clean[trax_df_clean.rec_sec != 0]
     # add a label made from the concat of the chapter and section -> chap-sec, this is what we want to predict
     trax_df_clean['label'] = trax_df_clean[['rec_ch', 'rec_sec']].apply(lambda data: f"{data['rec_ch']}-{data['rec_sec']}", axis=1)
+
+    # normalize text
+    normalization_func_dict = {'none': lambda x: x, 'dummy': dummy_normalization}  # add your funcs here
+    normalization_function = normalization_func_dict[args.normalization_method]
+    trax_df_clean['normalized_desc'] = trax_df_clean.defect_description.apply(normalization_function)
+
+    # split corpus
     train, validate, test = np.split(trax_df_clean.sample(frac=1, random_state=42),
                                      [int(.6 * len(trax_df_clean)), int(.8 * len(trax_df_clean))])
     print(f"Trax dataset split is: {len(train)} train, {len(validate)} dev, {len(test)} test.")
 
-    # let us try a little classifier based on tf-idf, which even ignores the hierarchical nature of the ATA labels (chapter / section)
+    # let us try a little classifier based on tf-idf
     tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='utf-8', ngram_range=(1, 2), stop_words='english')
-    features = tfidf.fit_transform(train.defect_description.tolist()).toarray()
+    features = tfidf.fit_transform(train.normalized_desc.tolist()).toarray()
     labels = train.label
     model = LinearSVC(random_state=42)
     model.fit(features, labels)
-    predictions = model.predict(tfidf.transform(test.defect_description.tolist()).toarray())
+    predictions = model.predict(tfidf.transform(test.normalized_desc.tolist()).toarray())
 
     f1 = f1_score(test.label, predictions, average='micro')
     print(f"F1 score on test is {f1 * 100:.1f}%")
+
+
+def dummy_normalization(text: str):
+    return ' '.join(text.split(r'[\.;,-]')[0:3])
 
 
 if __name__ == '__main__':
