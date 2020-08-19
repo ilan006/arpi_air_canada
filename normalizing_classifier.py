@@ -1,6 +1,8 @@
 """Normalizing framework stub, used in a classification context."""
 import argparse
+import re
 import numpy as np
+import os
 import pickle
 import pandas as pd
 from sklearn.svm import LinearSVC
@@ -9,8 +11,8 @@ from sklearn.metrics import f1_score
 
 
 def main():
-    # normalization possibilities
-    NORMALIZATION_FUNCTIONS = {'none': lambda x: x, 'dummy': dummy_normalization}  # add your funcs here
+    # normalization possibilities, add your functions here
+    NORMALIZATION_FUNCTIONS = {'none': lambda x: x, 'acro_replacement': replace_acros}
 
     # parse args
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
@@ -53,8 +55,33 @@ def main():
     print(f"F1 score on test is {f1 * 100:.1f}%")
 
 
-def dummy_normalization(text: str):
-    return ' '.join(text.split(r'[\.;, -\(\)]'))
+__acro_map: dict = None
+__acro_keys: set = None
+def load_acro_map():
+    global __acro_map, __acro_keys
+    acronym_file = os.path.join(os.path.dirname(__file__), 'small_resources', 'acronyms_1.tsv')
+    with open(acronym_file, 'rt', encoding='utf-8') as fin:
+        lines = fin.readlines()
+
+    __acro_map = dict()
+    for line in lines:
+        parts = line.strip().split('\t')
+        if len(parts) == 2:
+            __acro_map[parts[0].upper()] = parts[1].upper()
+
+    __acro_keys = set(__acro_map.keys())
+
+
+def replace_acros(text: str):
+    if __acro_map is None:
+        load_acro_map()
+
+    toks = re.split(r'[\s\.,;/:\(\)-]', text)  # do not do this
+    for i, tok in enumerate(toks):
+        if tok in __acro_keys:
+            toks[i] = __acro_map.get(tok)
+
+    return ' '.join(toks)
 
 
 if __name__ == '__main__':
