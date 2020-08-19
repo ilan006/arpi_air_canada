@@ -33,7 +33,7 @@ ADJ 	Adjustment
 ADM	aeronautical decision-making 
 ADM	air data module 
 ADS	automatic dependent surveillance 
-ADV	Arbeitsgemeinschaft Deutscher Verkehrsflughäfen German Airports Association 
+ADV	Arbeitsgemeinschaft Deutscher VerkehrsflughÃ¤fen German Airports Association 
 AEA	Association of European Airlines 
 AFCS	automatic flight control system 
 A/FD	Airport/Facility Directory 
@@ -172,7 +172,7 @@ CMV	converted meteorological visibility
 CMPA	complex motor-powered aircraft 
 CofA	Certificate of airworthiness 
 COTS 	Commercial off-the-shelf 
-CPDLC	controller–pilot data link communications 
+CPDLC	controllerâ€“pilot data link communications 
 CPR	Changed product rule 
 CRD 	Comment-response document (EASA) 
 CRES 	Corrosion resistant steel 
@@ -198,7 +198,7 @@ DG	directional gyro
 DGPS 	differential GPS 
 DGR	Dangerous Goods Regulation 
 DIA	diameter 
-DLR	German Aerospace Center / Deutsches Zentrum für Luft- und Raumfahrt e.V. 
+DLR	German Aerospace Center / Deutsches Zentrum fÃ¼r Luft- und Raumfahrt e.V. 
 DME	distance measuring equipment 
 DME 	Designated Mechanic Examiner 
 DMI	deferred maintenance item 
@@ -476,7 +476,7 @@ MRO	maintenance and repair organization
 MROT	Minimum Runway Occupancy Time 
 MRP	Material Resources Planning 
 MRW	maximum ramp weight 
-MSA	minimum safe altitude / minimum sector altitude 
+MSA	minimum safe altitudeÂ / minimum sector altitude 
 MSDS	Material Safety Data Sheet 
 MSL	mean sea level 
 MSLW	Max. Structural Landing Weight 
@@ -532,7 +532,7 @@ OW	operational weight
 P	(as a prefix:) prohibited airspace 
 PA	pressure altitude 
 PAH	production approval holder (FAA); see also POA and MCH 
-PANS-OPS	procedures for air navigation services – aircraft operations 
+PANS-OPS	procedures for air navigation servicesÂ â€“ aircraft operations 
 PAOG	Pre Aircraft on Ground 
 PAPI	precision approach path indicator 
 PAR	precision approach radar 
@@ -1913,7 +1913,7 @@ REDL	Runway Edge Lights
 REF	Reference to... Refer to...
 REG	Registration
 RENL	Runway End Lights
-ReOC	PRPA operator’s certificate
+ReOC	PRPA operatorâ€™s certificate
 REP	"Report, Reported, Reporting, Reporting Point"
 RePL	Remote pilot licence
 REQ	"Request, Requested"
@@ -2316,9 +2316,9 @@ ADIRS	Air data inertial reference system
 ADIRU	Air data inertial reference unit
 ADM	Air data module
 ADS	Either; automatic dependent surveillance or air data system
-ADS-A	Automatic dependent surveillance – address
-ADS-B	Automatic dependent surveillance – broadcast
-ADS-C	Automatic dependent surveillance – contract
+ADS-A	Automatic dependent surveillance â€“ address
+ADS-B	Automatic dependent surveillance â€“ broadcast
+ADS-C	Automatic dependent surveillance â€“ contract
 AESA	Active electronically scanned array
 AFCS	Automatic flight control system
 AFD	Autopilot flight director
@@ -2326,9 +2326,9 @@ AFDC	Autopilot flight director computer
 AFDS	Autopilot flight director system
 AFDX	Avionics Full-Duplex Switched Ethernet
 AFIS	Either: Automatic flight information service or airborne flight information system
-AGACS	"Automatic ground–air communications system, is also known as ATCSS or data link"
+AGACS	"Automatic groundâ€“air communications system, is also known as ATCSS or data link"
 AGC	Automatic gain control
-AGDL	Air–ground data link
+AGDL	Airâ€“ground data link
 AGL	Above Ground Level
 AHC	Attitude heading control
 AHRS	Attitude and heading reference system
@@ -2345,7 +2345,7 @@ AMLCD	Active-matrix liquid crystal display
 AMO	Approved maintenance organisation
 AMS	Air management system
 ANC	Active noise cancellation
-ANN	Annunciator – caution warning system normally containing visual and audio alerts to the pilot
+ANN	Annunciator â€“ caution warning system normally containing visual and audio alerts to the pilot
 ANR	Active noise reduction
 ANT	Antenna
 AOC	Aeronautical operational control
@@ -2419,7 +2419,7 @@ CODEC	Coder/decoder
 COMM or COM	"Communications transceiver, Communications receiver, or Communications radio transmitter (now, normally: either VHF or UHF; HF communications avionics are usually abbreviated simply HF)"
 COTS	Commercial off-the-shelf
 CPA	Closest point of approach
-CPDLC	Controller–pilot data link communications
+CPDLC	Controllerâ€“pilot data link communications
 CPS	Cycles per second
 CRM	Crew Resource Management
 CRT	Cathode ray tube
@@ -2492,7 +2492,7 @@ FF	Fuel flow
 FG	Flight Guidance
 FIC	Flight Information Centre
 FIKI	Flight Into Known Ice
-FIS-B	Flight information services – broadcast
+FIS-B	Flight information services â€“ broadcast
 FL	Flight Level
 FLIR	Forward-looking infra-red
 FLTA	Forward-looking terrain avoidance
@@ -2841,7 +2841,7 @@ VRP	Visual Point of Reference
 VSI	Vertical speed indicator
 VSM	Vertical separation limit
 VSO	Stall speed in landing configuration
-VSWR	Voltage–standing wave ratio
+VSWR	Voltageâ€“standing wave ratio
 VX	Speed for best angle of climb
 VY	Speed for best rate of climb
 WAAS	Wide Area Augmentation System
