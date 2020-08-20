@@ -10,14 +10,22 @@ import sys
 no_letter_pattern = re.compile("^[^a-zA-Z]*$")
 seat_number_pattern1 = re.compile("^[1-9][0-9]?[a-zA-Z]$")
 seat_number_pattern2 = re.compile("^[a-zA-Z][1-9][0-9]?$")
-def text_stats(series, fout, exclude_word_list):
+def text_stats(series, fout, exclude_word_list, precomputed_spell_check):
     exclude_list = set()
     if exclude_word_list is not None:
         with open(exclude_word_list) as fin:
             exclude_list = set(fin.read().split('\n'))
+    
+    spell_check = dict()
+    if precomputed_spell_check is not None:
+        with open(precomputed_spell_check) as fin:
+            for line in fin.read.split('\n'):
+                k, v = line.split('\t')
+                spell_check[k] = v
 
     vocabulary = dict()
     total = 0
+    subtotal = 0
     rows_empty = 0
     for txt in series:
         if type(txt) != str:
@@ -31,25 +39,33 @@ def text_stats(series, fout, exclude_word_list):
         txt = txt.replace("[", "")
         txt = txt.replace("]", "")
         for token in txt.split(' '):
-            if not no_letter_pattern.match(token) and token.lower() not in exclude_list and not seat_number_pattern1.match(token) and not seat_number_pattern2.match(token):
-                total += 1
-                nb = vocabulary.get(token, 0)
-                vocabulary[token] = nb + 1
-    avg = total / len(vocabulary)
-    med = sorted(vocabulary.values())[round(len(vocabulary)/2)]
+            total += 1
+            if not no_letter_pattern.match(token):
+                if token in spell_check:
+                    token = spell_check[token]
+
+                if token.lower() not in exclude_list and not seat_number_pattern1.match(token) and not seat_number_pattern2.match(token):
+                    subtotal += 1
+                    nb = vocabulary.get(token, 0)
+                    vocabulary[token] = nb + 1
+    avg = len(vocabulary) / total
+    print(total, subtotal, len(vocabulary), file=sys.stderr)
+    med = sorted(vocabulary.values())[round(len(vocabulary)/2)] / total
 
     print(f"{rows_empty} empty rows", file=sys.stderr)
 
     print(f"average: {avg}\nmedian: {med}\n", file=fout)
     for word, count in sorted(vocabulary.items(), key=lambda item: item[1], reverse=True):
-        print(f"{count}\t{word}", file=fout)
+        print(f"{count/total}\t{word}", file=fout)
     
 
 # parse args
 parser = argparse.ArgumentParser("A sample program.")
 parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
+
 parser.add_argument("--description_stats_output_file", help="Output file for simple text stats on the defect description field.")
 parser.add_argument("--word_exclude_file", help="Use with description_stats to ignore words from a given dictionary file.") # e.g. en_dict.txt
+parser.add_argument("--precomputed_spell_checks")
 
 args = parser.parse_args()
 
@@ -68,4 +84,4 @@ print(f"Avg text len in tokens: {nb_toks.mean():.1f} +- {nb_toks.std():.1f}")
 
 if args.description_stats_output_file is not None:
     with open(args.description_stats_output_file, 'w') as fout:
-        text_stats(defect_df_full.defect_description, fout, args.word_exclude_file)
+        text_stats(defect_df_full.defect_description, fout, args.word_exclude_file, args.precomputed_spell_checks)
