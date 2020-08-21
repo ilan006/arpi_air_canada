@@ -57,7 +57,15 @@ def text_stats(series, fout, exclude_word_list, precomputed_spell_check):
     print(f"average: {avg}\nmedian: {med}\n", file=fout)
     for word, count in sorted(vocabulary.items(), key=lambda item: item[1], reverse=True):
         print(f"{count/total}\t{word}", file=fout)
-    
+
+
+def mel_corrections(defect_df_full, mel_df):
+    defect_with_mel = defect_df_full[defect_df_full['mel_number'].notnull()]
+    join = defect_with_mel.join(mel_df, on='mel_number', rsuffix='_mel_df')
+    identical = join[join.chapter == join.chapter_mel_df]
+    identical = identical[identical.section == identical.section_mel_df]
+
+    return len(identical) / len(defect_with_mel)
 
 # parse args
 parser = argparse.ArgumentParser("A sample program.")
@@ -81,6 +89,7 @@ nb_toks = defect_df_full.defect_description.apply(lambda s: len(re.split(r'[\s,\
 
 print(f"Avg text len in chars: {text_len.mean():.1f}")
 print(f"Avg text len in tokens: {nb_toks.mean():.1f} +- {nb_toks.std():.1f}")
+print(f"Proportion of chapter-section corrections in MEL table: {mel_corrections(defect_df_full, mel_df)*100:.1f}%")
 
 if args.description_stats_output_file is not None:
     with open(args.description_stats_output_file, 'w') as fout:
