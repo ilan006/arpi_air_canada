@@ -67,16 +67,8 @@ def capped_levenshtein(token: str, dictionary: set):
 
 
 def process_txt(txt):
-    txt = txt.replace(",", "")
-    txt = txt.replace(".", "")
-    txt = txt.replace(";", "")
-    txt = txt.replace(":", "")
-    txt = txt.replace('"', "")
-    txt = txt.replace("(", "")
-    txt = txt.replace(")", "")
-    txt = txt.replace("[", "")
-    txt = txt.replace("]", "")
-    return txt
+    result = re.sub(r'[,\.;:"\(\)\[\]]', '', txt)
+    return result
 
 
 def spell_check(series, mpq, domain_dict: set, en_dict: set):
