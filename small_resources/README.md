@@ -3,3 +3,4 @@ A few (modest) resources. Nothing large.
 * `airport_codes.tsv`: A file mapping airport codes (YUL - Montreal) to their names.
 * `en_dict.txt`: An english dictionary containing inflected forms
 * `en_dict_short.txt`: An english dictionary containing only the 55k of the most frequent Wikipedia tokens.
+* `valid_cluster_ids.txt`: A list of cluster ids that were deemed valid by humans.
