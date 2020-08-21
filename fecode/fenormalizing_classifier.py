@@ -22,7 +22,7 @@ __acro_keys: set = None
 
 def load_acro_map():
     global __acro_map, __acro_keys
-    acronym_file = os.path.join(os.path.dirname(__file__), '..', small_resources', 'acronyms_1.tsv')
+    acronym_file = os.path.join(os.path.dirname(__file__), '..', small_resources, 'acronyms_1.tsv')
     print(acronym_file)
     with open(acronym_file, 'rt', encoding='utf-8') as fin:
         lines = fin.readlines()

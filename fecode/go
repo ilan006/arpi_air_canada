@@ -8,7 +8,7 @@
 # - feacro reads acro/context lines (tabular separated) and outputs candidate resolution (note: you can control #candidates)
 #
 # this is how I ran it:
-# go ../Data_nobackup/OneDrive_1_2020-08-17/aircan-data-split-clean.pkl >! Data_nobackup/traces/acronyms  
+# go ../Data_nobackup/OneDrive_1_2020-08-17/aircan-data-split-clean.pkl >! samll_ressources/acronyms  
 #
 
 # ---------------
