@@ -1,6 +1,8 @@
 """
 This script evaluates a candidate clustering given a reference.
 """
+import os
+
 from sklearn.metrics import homogeneity_completeness_v_measure
 from sklearn.metrics.cluster import adjusted_rand_score
 import pandas as pd
@@ -8,7 +10,8 @@ import pandas as pd
 NO_CLUSTER_LABEL = -1
 
 
-def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=True):
+def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=True,
+                               remove_invalid_clusters=True):
     """
     Uses sklearn's Adjusted Rand Index, homogeneity, completeness and v-measure
     to evaluate the clustering predictions.
@@ -24,6 +27,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
                         Clusters containing a single element are ignored during evaluation.
     :param remove_ata_zero_section: Remove from the reference all clusters for which the ATA section is 0 (recommended)
+    :param remove_invalid_clusters: Remove clusters which were invalidated by humans (recommended).
     :return: A dict with the following keys
         ari_score - Adjusted Rand Index, similarity score between -1.0 and 1.0. Random labelings have an ARI close to 0.
                                          1.0 stands for perfect match.
@@ -42,6 +46,10 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
     if remove_ata_zero_section:
         filled_df.where(ref_df.section == 0, NO_CLUSTER_LABEL, inplace=True)
 
+    if remove_invalid_clusters:
+        valid_cluster_ids = get_valid_cluster_ids()
+        filled_df = filled_df.apply(lambda clus_id: clus_id if clus_id in valid_cluster_ids else NO_CLUSTER_LABEL)
+
     # remove clusters with a single member, which are not clusters at all
     duplicate_df = filled_df.duplicated(keep=False)
     filled_df.where(duplicate_df, NO_CLUSTER_LABEL, inplace=True)
@@ -57,7 +65,8 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
     return {'ari_score': ari_score, 'homogeneity': homogeneity,
             'completeness': completeness, 'v_measure': v_measure_score,
             'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters,
-            'remove_ata_zero_section': remove_ata_zero_section}
+            'remove_ata_zero_section': remove_ata_zero_section,
+            'nb_ref_clusters': len(set(ref_clusters.tolist()))}
 
 
 def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
@@ -90,3 +99,11 @@ def dump_debug_info(defect_df: pd.DataFrame, debug_info, fout):
     print("id\tpred_label\tref_label", file=fout)
     for id, pred, ref in zip(defect_df.index, debug_info['pred_clusters'], debug_info['ref_clusters']):
         print(f"{id}\t{str(pred)}\t{str(ref)}", file=fout)
+
+
+def get_valid_cluster_ids():
+    result = None
+    valid_id_file = os.path.join(os.path.dirname(__file__), 'small_resources', 'valid_cluster_ids.txt')
+    with open(valid_id_file, 'rt', encoding='utf-8') as fin:
+        result = set([int(x.strip()) for x in fin.readlines()])
+    return result
