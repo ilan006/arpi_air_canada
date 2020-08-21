@@ -155,10 +155,17 @@ if __name__ == "__main__":
                 except queue.Empty:
                     time.sleep(.5)
         
-    
-    multiprocessing.Process(target=writer, args=(args.spell_check_output_file, mpq)).start()
-    txt_series = defect_df_full.defect_description
     max_jobs = max(multiprocessing.cpu_count() -2, 2)
+
+    multiprocessing.Process(target=writer, args=(args.spell_check_output_file, mpq)).start()
+
+    txt_series = defect_df_full.defect_description
+    for i in tqdm(range(0, len(txt_series), chunk_size)):
+        while len(multiprocessing.active_children()) >= max_jobs:
+            time.sleep(.5)
+        multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict)).start()
+
+    txt_series = defect_df_full.resolution_description
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
