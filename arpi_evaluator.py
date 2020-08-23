@@ -32,9 +32,9 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
         ari_score - Adjusted Rand Index, similarity score between -1.0 and 1.0. Random labelings have an ARI close to 0.
                                          1.0 stands for perfect match.
         homogeneity - A clustering result satisfies homogeneity if all of its predicted clusters contain only data
-                      points that are clustered in the reference. Akin to recall.
+                      points that are clustered in the reference.
         completeness - A clustering result satisfies completeness if all the data points that are members of the
-                       same reference cluster are found in the same predicted cluster. Akin to precision.
+                       same reference cluster are found in the same predicted cluster.
         v_measure - harmonic mean of homogeneity and completeness
         pred_clusters - a list of predicted cluster labels, useful for debug
         ref_clusters - a list of reference cluster labels, useful for debug
