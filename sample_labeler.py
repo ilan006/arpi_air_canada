@@ -55,6 +55,7 @@ def main():
     features = tfidf.fit_transform(train.defect_description.tolist()).toarray()
     labels = train.label
     model = RandomForestClassifier(n_estimators=200, max_depth=3, random_state=42)
+    # not suuurre.
     model.fit(features, labels)
     predictions = model.predict(tfidf.transform(test.defect_description.tolist()).toarray())
 

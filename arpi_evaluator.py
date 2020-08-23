@@ -76,6 +76,7 @@ def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
     for i, cluster in enumerate(predictions):
         if len(cluster) > 1:  # we only keep clusters whose size is > 1
             for label in cluster:
+                assert label in ref_df.index, f"Invalid cluster label {label}, not found in reference dataframe."
                 label_to_cluster_name[label] = i
 
     result = [NO_CLUSTER_LABEL] * len(ref_df)
