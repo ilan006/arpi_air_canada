@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
     parser.add_argument("normalization_method", help="Normalization method.", choices=NORMALIZATION_FUNCTIONS.keys())
-    parser.add_argument('--reliable', '-r', action='store_true', help='Use relabeled reliable ATA chapter/sections.', default=True)
+    parser.add_argument('--reliable', '-r', action='store_true', help='Use relabeled reliable ATA chapter/sections only.', default=True)
 
     args = parser.parse_args()
 
@@ -34,7 +34,7 @@ def main():
         for df in [defect_df_train, defect_df_dev, defect_df_test]:
             arpi_evaluator.relabel_ata(df)
             nb_valids += df['reliable_chapter'].count()
-        print(f"Reliable labeling decreased size from {len(defect_df_train) + len(defect_df_test) + len(defect_df_dev)} to {nb_valids}")
+        print(f"Reliable labeling decreased corpus size from {len(defect_df_train) + len(defect_df_test) + len(defect_df_dev)} to {nb_valids}")
 
     # remove empty descriptions
     trax_df_clean = trax_df.dropna(subset=['defect_description'])
