@@ -1,0 +1,42 @@
+USE:
+python get_reliable_data.py -in ./path/to/the/file/aircan-data-split-clean.xlsx
+
+
+This is the original data from the aircan-data-split-clean file but ridden of it's most unreliable data:
+    - The defect_type C and E are filled by the cabin crew. The defect_type C is always unreliable since there is no
+        confirmation or review of its Chapter and Section classification. The defect_type E is filled by using an
+        application that outputs the data in a structured matter, so (to Air Canada) it is always reliable.
+    - The defect_type L is filled by the pilots and technical crew. The Chapter and Section column do not
+        always correspond to the MEL_number (which is more uniformly filled by specialists in the matter and has a
+        mapping to "correct" Chapter and Section codes).
+        The MEL_number is made of and alphanumeric set of 4, but we have been asked explained that we can also
+        consider the first 3 and forget about the 4th if the exact code is absent from the MEL-Chapter/Section mapping.
+
+
+DATA:
+##########################################################
+defect_type     chapter	    section     mel_number      ##
+L               21          31          21-31-01-B0     ##
+L               38          10          38-10-01-B      ##
+##########################################################
+
+MEL MAPPING:
+######################################
+mel_number      chapter	    section ##
+21-31-01-B0     21          31      ##
+38-10-01-B0     38          10      ##
+######################################
+
+* The super_duper_reliable_aircan-data-split-clean.tsv file contains the E rows and the L rows where the MEL_code
+    has an exact match (set of 4 alphanumeric codes) with the MEL mapping and the Chapter and Section also match.
+* The super_reliable_aircan-data-split-clean.tsv file contains all the rows in the
+    super_duper_reliable_aircan-data-split-clean.tsv + those where the MEL_code has an exact match
+    (set of 4 alphanumeric codes) with the MEL mapping BUT the Chapter and Section from the data was changed to the
+    Chapter and Section from the MEL mapping.
+* The very_reliable_aircan-data-split-clean.tsv file contains all the rows in the
+    super_reliable_aircan-data-split-clean.tsv + those where the reduced MEL_code (the first 3 alphanumeric codes)
+    matches the MEL mapping (also the first 3 alphanumeric codes) AND the Chapter and Section from the data and from
+    the MEL mapping match.
+* The reliable_aircan-data-split-clean.tsv file contains all the rows in the very_reliable_aircan-data-split-clean.tsv
+    + those where the reduced MEL_code (the first 3 alphanumeric codes) matches the MEL mapping BUT the Chapter and
+    Section from the data was changed to the Chapter and Section from the MEL mapping.

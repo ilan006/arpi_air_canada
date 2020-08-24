@@ -67,7 +67,7 @@ def capped_levenshtein(token: str, dictionary: set):
 
 
 def process_txt(txt):
-    result = re.sub(r'[,\.;:"\(\)\[\]]', '', txt)
+    result = re.sub(r'[,\.;:"\(\)\[\]]', ' ', txt)
     return result
 
 
@@ -169,12 +169,14 @@ if __name__ == "__main__":
     multiprocessing.Process(target=writer, args=(args.spell_check_output_file, mpq)).start()
 
     txt_series = defect_df_full.defect_description
+    print("Searching corrections for defect descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
         multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict)).start()
 
     txt_series = defect_df_full.resolution_description
+    print("Searching corrections for resolution descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
