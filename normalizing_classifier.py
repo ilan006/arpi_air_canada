@@ -75,7 +75,7 @@ def main():
     predictions = model.predict(tfidf.transform(test_df.normalized_desc.tolist()).toarray())
 
     precision = precision_score(test_df.label, predictions, average='micro')
-    print(f"Precision is {str(precision)}")
+    print(f"Precision is {precision * 100:.2f}%")
 
 
 __acro_map: dict = None
