@@ -66,8 +66,19 @@ def capped_levenshtein(token: str, dictionary: set):
             return candidates[0][0]
 
 
+min_letters_pattern = re.compile(".*[a-zA-Z]{3}.*")
+digit_pattern = re.compile(".*[0-9].*")
+def token_is_word_like(token):
+    if not min_letters_pattern.match(token):
+        return False
+    if digit_pattern.match(token):
+        return False
+    return True
+
+
 def process_txt(txt):
-    result = re.sub(r'[,\.;:"\(\)\[\]]', '', txt)
+    result = re.sub(r'[^a-zA-Z0-9]', ' ', txt)
+    result = result.lower()
     return result
 
 
@@ -89,6 +100,17 @@ def spell_check(series, mpq, domain_dict: set, en_dict: set):
                 else:
                     result = capped_levenshtein(token, en_dict)
                     mpq.put((token, result, 1))
+
+
+def load_spell_dict(filename: str):
+    spell_dict = dict()
+    with open(filename) as fin:
+        for line in fin.read().split('\n'):
+            if line == '': # last line
+                break
+            [token, correction, confidence] = line.split('\t')
+            assert(token not in spell_dict)
+            spell_dict[token] = (correction, confidence)
 
 
 if __name__ == "__main__":
@@ -160,12 +182,14 @@ if __name__ == "__main__":
     multiprocessing.Process(target=writer, args=(args.spell_check_output_file, mpq)).start()
 
     txt_series = defect_df_full.defect_description
+    print("Searching corrections for defect descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
         multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict)).start()
 
     txt_series = defect_df_full.resolution_description
+    print("Searching corrections for resolution descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
