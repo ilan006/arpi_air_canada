@@ -24,11 +24,14 @@ def main():
 
     args = parser.parse_args()
 
+    print("Loading...")
     with open(args.input_file, 'rb') as fin:
         [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
 
-    for df in [defect_df_train, defect_df_dev, defect_df_test]:
-        arpi_evaluator.relabel_ata(df)
+    if args.reliable:
+        print("Relabeling with reliable ATA chapters and sections...")
+        for df in [defect_df_train, defect_df_dev, defect_df_test]:
+            arpi_evaluator.relabel_ata(df)
 
     # remove empty descriptions
     trax_df_clean = trax_df.dropna(subset=['defect_description'])

@@ -112,5 +112,60 @@ def get_valid_cluster_ids():
     return result
 
 
-def relabel_ata(df):
-    return None
+def lookup_mel(series, is_chapter, mel_table):
+    result = pd.NA
+
+    if series.defect_type == 'E':
+        result = series.chapter if is_chapter else series.section
+
+    if not pd.isnull(series.mel_number):
+        lookup = mel_table.get(series.mel_number, None)
+        if lookup is not None:
+            result = lookup[0] if is_chapter else lookup[1]
+        elif series.mel_number.count('-') == 3:
+            new_key = series.mel_number[0:9]
+            if new_key in mel_table:
+                lookup = mel_table.get(new_key)
+                result = lookup[0] if is_chapter else lookup[1]
+
+    return result
+
+
+def relabel_ata(df: pd.DataFrame) -> None:
+    """
+    Adds columns describing more reliable ATA chapters and sections, taken from MEL. We also consider 'E' type
+    defects as reliable. Other, non-reliable defects will have n/a (or null) for these columns. The columns added
+    to the passed dataframe are:
+    - reliable_chapter
+    - reliable_section
+
+    :param df: Input dataframe
+    :return: None, the input dataframe is modified
+    """
+
+    # load map
+    mel_to_ata = os.path.join(os.path.dirname(__file__), 'small_resources', 'mel_table.tsv')
+    with open(mel_to_ata, 'rt', encoding='utf-8') as fin:
+        lines = [x.strip() for x in fin.readlines()]
+
+    mel_map = {}
+    for line in lines:
+        parts = line.split('\t')
+        if len(parts) == 3 and parts[2] != '0':  # no section 0
+            mel_map[parts[0]] = (int(parts[1]), int(parts[2]))
+
+    more_mel_map = {}
+    for key in mel_map.keys():
+        parts = key.split('-')
+        if len(parts) == 4:
+            three_key = '-'.join(parts[0:3])
+            if three_key not in mel_map:
+                more_mel_map[three_key] = mel_map[key]
+
+    mel_map.update(more_mel_map)
+
+    # add two columns to dataset, pd.NA by default
+    df['reliable_chapter'] = pd.NA
+    df['reliable_section'] = pd.NA
+    df.reliable_chapter = df[['mel_number', 'defect_type', 'chapter', 'section']].apply(lookup_mel, axis=1, is_chapter=True, mel_table=mel_map)
+    df.reliable_section = df[['mel_number', 'defect_type', 'chapter', 'section']].apply(lookup_mel, axis=1, is_chapter=False, mel_table=mel_map)
