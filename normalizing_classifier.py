@@ -74,11 +74,8 @@ def main():
 
     predictions = model.predict(tfidf.transform(test_df.normalized_desc.tolist()).toarray())
 
-    recall = recall_score(test_df.label, predictions, average='micro')
     precision = precision_score(test_df.label, predictions, average='micro')
-    f1 = 2 * (precision * recall / (precision + recall))
-
-    print(f"P = {str(precision)}, R = {str(recall)}, F1 = {str(f1)}")
+    print(f"Precision is {str(precision)}")
 
 
 __acro_map: dict = None
