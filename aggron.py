@@ -1,5 +1,5 @@
 """
-A sample clusterer.
+My clustering efforts.
 """
 import argparse
 import re
