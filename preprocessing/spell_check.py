@@ -91,6 +91,15 @@ def spell_check(series, mpq, domain_dict: set, en_dict: set):
                     mpq.put((token, result, 1))
 
 
+def load_spell_dict(filename: str):
+    spell_dict = dict()
+    with open(filename) as fin:
+        for line in fin.read().split('\n'):
+            [token, correction, confidence] = line.split('\t')
+            assert(token not in spell_dict)
+            spell_dict[token] = (correction, confidence)
+
+
 if __name__ == "__main__":
     # parse args
     parser = argparse.ArgumentParser()
