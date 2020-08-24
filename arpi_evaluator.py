@@ -110,3 +110,7 @@ def get_valid_cluster_ids():
     with open(valid_id_file, 'rt', encoding='utf-8') as fin:
         result = set([int(x.strip()) for x in fin.readlines()])
     return result
+
+
+def relabel_ata(df):
+    return None
