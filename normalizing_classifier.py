@@ -9,6 +9,8 @@ from sklearn.svm import LinearSVC
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import f1_score
 
+import arpi_evaluator
+
 
 def main():
     # normalization possibilities, add your functions here
@@ -18,10 +20,15 @@ def main():
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
     parser.add_argument("normalization_method", help="Normalization method.", choices=NORMALIZATION_FUNCTIONS.keys())
+    parser.add_argument('--reliable', '-r', action='store_true', help='Use relabeled reliable ATA chapter/sections.', default=True)
+
     args = parser.parse_args()
 
     with open(args.input_file, 'rb') as fin:
         [defect_df_train, defect_df_dev, defect_df_test, ata_df, mel_df, trax_df] = pickle.load(fin)
+
+    for df in [defect_df_train, defect_df_dev, defect_df_test]:
+        arpi_evaluator.relabel_ata(df)
 
     # remove empty descriptions
     trax_df_clean = trax_df.dropna(subset=['defect_description'])
