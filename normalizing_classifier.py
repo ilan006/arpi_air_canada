@@ -7,7 +7,7 @@ import pickle
 import pandas as pd
 from sklearn.svm import LinearSVC
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 
 import arpi_evaluator
 
@@ -74,8 +74,11 @@ def main():
 
     predictions = model.predict(tfidf.transform(test_df.normalized_desc.tolist()).toarray())
 
-    f1 = f1_score(test_df.label, predictions, average='micro')
-    print(f"F1 score on test is {f1 * 100:.1f}%")
+    recall = recall_score(test_df.label, predictions, average='micro')
+    precision = precision_score(test_df.label, predictions, average='micro')
+    f1 = 2 * (precision * recall / (precision + recall))
+
+    print(f"P = {str(precision)}, R = {str(recall)}, F1 = {str(f1)}")
 
 
 __acro_map: dict = None
