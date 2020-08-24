@@ -30,8 +30,11 @@ def main():
 
     if args.reliable:
         print("Relabeling with reliable ATA chapters and sections...")
+        nb_valids = 0
         for df in [defect_df_train, defect_df_dev, defect_df_test]:
             arpi_evaluator.relabel_ata(df)
+            nb_valids += df['reliable_chapter'].count()
+        print(f"Reliable labeling decreased size from {len(defect_df_train) + len(defect_df_test) + len(defect_df_dev)} to {nb_valids}")
 
     # remove empty descriptions
     trax_df_clean = trax_df.dropna(subset=['defect_description'])
