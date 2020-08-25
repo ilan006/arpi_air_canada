@@ -175,6 +175,8 @@ def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
         quick_df = df_view.apply(lambda x: f"{str(x['chapter'])}-{str(x['section'])}", axis=1)
         result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
                                     metric=distance_metric_ata_ch_sec, df=quick_df)
+        print(str(type(result)))
+        print(str(type(result[0][0])))
     elif dist_matrix == 'delta_day':
         quick_df = df_view.apply(lambda x: (x['reported_datetime'] - __BEGINNING_OF_TIME) // __TIMEDELTA_HOUR, axis=1)
         result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
@@ -182,6 +184,7 @@ def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
     else:
         raise ValueError("Invalid distance metric " + dist_matrix)
 
+    result = result.astype(np.float16)
     return result
 
 
@@ -199,7 +202,7 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
             matrix = {}
             grouped_by_ac = df.groupby('ac')
             for name, ac_group in grouped_by_ac:
-                print(name, end=' ')
+                print(name, end=' ', flush=True)
                 matrix[name] = compute_distance_matrix(ac_group, dist_matrix)
             print()
 
