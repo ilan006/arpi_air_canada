@@ -188,13 +188,14 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
             print("Loading distance matrix " + dist_matrix)
             matrix = pickle.load(open(dist_file, 'rb'))
         else:
-            print("Computing distance matrix " + dist_matrix + '...')
+            print("Computing distance matrix " + dist_matrix + '...', end=' ')
             # compute the distance matrix
             matrix = {}
             grouped_by_ac = df.groupby('ac')
             for name, ac_group in grouped_by_ac:
-                print(name)
+                print(name, end=' ')
                 matrix[name] = compute_distance_matrix(ac_group, dist_matrix)
+            print()
 
         pickle.dump(matrix, open(dist_file, 'wb'))
         result[dist_matrix] = matrix
