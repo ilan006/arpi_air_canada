@@ -131,7 +131,7 @@ def lookup_mel(series, is_chapter, mel_table):
     return result
 
 
-def relabel_ata(df: pd.DataFrame) -> None:
+def relabel_ata(df: pd.DataFrame) -> dict:
     """
     Adds columns describing more reliable ATA chapters and sections, taken from MEL. We also consider 'E' type
     defects as reliable. Other, non-reliable defects will have n/a (or null) for these columns. The columns added
