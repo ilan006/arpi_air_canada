@@ -89,11 +89,12 @@ def main():
         if lsa:  # may have to be run on full corpus rather than on subset
             X = lsa.fit_transform(X)
 
-        dist_matrix = pairwise_distances(X, None, metric='euclidean', n_jobs=-1)  # custom fun is very slow? 'euclidean' is fast and good
+        text_representation_matrix = pairwise_distances(X, None, metric='euclidean', n_jobs=-1)  # custom fun is very slow? 'euclidean' is fast and good
+        distance_matrix = 0.5 * text_representation_matrix + 0.5 * additional_dist_matrices['ata_ch_sec'][name]
 
         clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',  # None here and
-                                                   distance_threshold=1.0, linkage='average')  # 1.0 for thresh
-        clusters = clustering_model.fit_predict(dist_matrix)
+                                                   distance_threshold=1.0, linkage='average')  # 1.0 for thresh (play with this hyperparameter is important)
+        clusters = clustering_model.fit_predict(distance_matrix)
 
         row_number = 0
         for index, _ in ac_group.iterrows():
@@ -169,8 +170,9 @@ def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
         result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
                                     metric=distance_metric_ref, df=df_view)
     elif dist_matrix == 'ata_ch_sec':
+        quick_df = df_view.apply(lambda x: f"{str(x['chapter'])}-{str(x['section'])}", axis=1)
         result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
-                                    metric=distance_metric_ata_ch_sec, df=df_view)
+                                    metric=distance_metric_ata_ch_sec, df=quick_df)
     else:
         raise ValueError("Invalid distance metric " + dist_matrix)
 
@@ -183,13 +185,15 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
     for dist_matrix in matrix_names:
         dist_file = os.path.join(working_dir, dist_matrix + '.pkl')
         if os.path.exists(dist_file):
-            print("Loading feature " + dist_matrix)
+            print("Loading distance matrix " + dist_matrix)
             matrix = pickle.load(open(dist_file, 'rb'))
         else:
+            print("Computing distance matrix " + dist_matrix + '...')
             # compute the distance matrix
             matrix = {}
             grouped_by_ac = df.groupby('ac')
             for name, ac_group in grouped_by_ac:
+                print(name)
                 matrix[name] = compute_distance_matrix(ac_group, dist_matrix)
 
         pickle.dump(matrix, open(dist_file, 'wb'))
@@ -205,11 +209,8 @@ def distance_metric_ref(index1, index2, df: pd.DataFrame):
     return 1
 
 
-def distance_metric_ata_ch_sec(index1, index2, df: pd.DataFrame):
-    ata1 = (df.iloc[int(index1)].chapter, df.iloc[int(index1)].section)
-    ata2 = (df.iloc[int(index2)].chapter, df.iloc[int(index2)].section)
-
-    return 0. if ata1 == ata2 else 1.
+def distance_metric_ata_ch_sec(index1, index2, df: pd.Series):
+    return 0. if df[int(index1)] == df[int(index2)] else 1.
 
 
 if __name__ == '__main__':
