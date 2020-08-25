@@ -63,6 +63,9 @@ def main():
                     load_full_spelling()
                 df['text_content'] = df.text_content.apply(normalization_functions.get(step))
 
+    print("Loading additional distance matrices...")
+    additional_dist_matrices = load_distance_matrices(['ata_ch_sec'], defect_df_test, args.working_dir)
+
     # train vectorizer
     print("Tfidf.", file=sys.stderr)
     train_and_dev = pd.concat([defect_df_train, defect_df_dev], sort=True)
@@ -77,8 +80,6 @@ def main():
     svd = TruncatedSVD(100)  # 100 is better!
     normalizer = Normalizer(copy=False)  # svd does not yield normalized vectors
     lsa = make_pipeline(svd, normalizer)
-
-    additional_dist_matrices = load_distance_matrices(defect_df_test, args.working_dir)
 
     grouped_by_ac = defect_df_test.groupby('ac')
     for name, ac_group in grouped_by_ac:
@@ -165,18 +166,21 @@ def load_full_spelling():
 
 def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
     if dist_matrix == 'ref':  # a reference to another defect in writing
-        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1, metric=distance_metric_ref,
-                                    dataframe=df_view)
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_ref, df=df_view)
+    elif dist_matrix == 'ata_ch_sec':
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_ata_ch_sec, df=df_view)
     else:
         raise ValueError("Invalid distance metric " + dist_matrix)
 
     return result
 
 
-def load_distance_matrices(df: pd.DataFrame, working_dir: str):
+def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: str):
     result = {}
 
-    for dist_matrix in ['ref', 'time']:
+    for dist_matrix in matrix_names:
         dist_file = os.path.join(working_dir, dist_matrix + '.pkl')
         if os.path.exists(dist_file):
             print("Loading feature " + dist_matrix)
@@ -194,10 +198,18 @@ def load_distance_matrices(df: pd.DataFrame, working_dir: str):
     return result
 
 
-def distance_metric_ref(index1, index2, dataframe):
+def distance_metric_ref(index1, index2, df: pd.DataFrame):
     """index1 is the index in the dataframe of the line"""
-    print(f"{index1}-{index2}")
+    print(f"{index1}-{index2}-{df.iloc[index1, 'text_content']}")
+    raise NotImplementedError("not yet implemented")
     return 1
+
+
+def distance_metric_ata_ch_sec(index1, index2, df: pd.DataFrame):
+    ata1 = (df.iloc[int(index1)].chapter, df.iloc[int(index1)].section)
+    ata2 = (df.iloc[int(index2)].chapter, df.iloc[int(index2)].section)
+
+    return 0. if ata1 == ata2 else 1.
 
 
 if __name__ == '__main__':
