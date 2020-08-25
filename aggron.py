@@ -21,6 +21,8 @@ import arpi_evaluator
 
 __NUM_TOKEN = 'numba'
 __SPELLING_FULL = None
+__BEGINNING_OF_TIME = np.datetime64('1970-01-01T00:00:00')
+__TIMEDELTA_HOUR = np.timedelta64(1, 'h')
 
 
 def main():
@@ -64,7 +66,7 @@ def main():
                 df['text_content'] = df.text_content.apply(normalization_functions.get(step))
 
     print("Loading additional distance matrices...")
-    additional_dist_matrices = load_distance_matrices(['ata_ch_sec'], defect_df_test, args.working_dir)
+    additional_dist_matrices = load_distance_matrices(['ata_ch_sec', 'delta_day'], defect_df_test, args.working_dir)
 
     # train vectorizer
     print("Tfidf.", file=sys.stderr)
@@ -173,6 +175,10 @@ def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
         quick_df = df_view.apply(lambda x: f"{str(x['chapter'])}-{str(x['section'])}", axis=1)
         result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
                                     metric=distance_metric_ata_ch_sec, df=quick_df)
+    elif dist_matrix == 'delta_day':
+        quick_df = df_view.apply(lambda x: (x['reported_datetime'] - __BEGINNING_OF_TIME) // __TIMEDELTA_HOUR, axis=1)
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_delta_day, df=quick_df)
     else:
         raise ValueError("Invalid distance metric " + dist_matrix)
 
@@ -185,7 +191,7 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
     for dist_matrix in matrix_names:
         dist_file = os.path.join(working_dir, dist_matrix + '.pkl')
         if os.path.exists(dist_file):
-            print("Loading distance matrix " + dist_matrix)
+            print("Loading distance matrix " + dist_matrix + '...')
             matrix = pickle.load(open(dist_file, 'rb'))
         else:
             print("Computing distance matrix " + dist_matrix + '...', end=' ')
@@ -212,6 +218,10 @@ def distance_metric_ref(index1, index2, df: pd.DataFrame):
 
 def distance_metric_ata_ch_sec(index1, index2, df: pd.Series):
     return 0. if df[int(index1)] == df[int(index2)] else 1.
+
+
+def distance_metric_delta_day(index1, index2, df: pd.Series):
+    return abs(df[int(index1)] - df[int(index2)]) / 24.0
 
 
 if __name__ == '__main__':
