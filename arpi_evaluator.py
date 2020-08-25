@@ -123,7 +123,7 @@ def lookup_mel(series, is_chapter, mel_table):
         if lookup is not None:
             result = lookup[0] if is_chapter else lookup[1]
         elif series.mel_number.count('-') == 3:
-            new_key = series.mel_number[0:9]
+            new_key = series.mel_number[0:8]
             if new_key in mel_table:
                 lookup = mel_table.get(new_key)
                 result = lookup[0] if is_chapter else lookup[1]
