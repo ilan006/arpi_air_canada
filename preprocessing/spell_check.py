@@ -102,6 +102,9 @@ def spell_check(series, mpq, domain_dict: set, en_dict: set):
                     mpq.put((token, result, 1))
 
 
+"""
+Use this function to load a precomputed output of this module for any use.
+"""
 def load_spell_dict(filename: str):
     spell_dict = dict()
     with open(filename) as fin:
