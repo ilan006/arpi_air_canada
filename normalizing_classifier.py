@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
     parser.add_argument("input_file", help="A pickle input file, e.g. aircan-data-split-clean.pkl.")
     parser.add_argument("normalization_method", help="Normalization method.", choices=NORMALIZATION_FUNCTIONS.keys())
-    parser.add_argument('--reliable', '-r', action='store_true', help='Use relabeled reliable ATA chapter/sections only.', default=True)
+    parser.add_argument('--reliable', '-r', action='store_true', help='Use relabeled reliable ATA chapter/sections only.')
 
     args = parser.parse_args()
 
