@@ -140,7 +140,7 @@ def relabel_ata(df: pd.DataFrame) -> None:
     - reliable_section
 
     :param df: Input dataframe
-    :return: None, the input dataframe is modified
+    :return: A list of relabeling actions performed by this function.
     """
 
     # load map
@@ -169,3 +169,21 @@ def relabel_ata(df: pd.DataFrame) -> None:
     df['reliable_section'] = pd.NA
     df.reliable_chapter = df[['mel_number', 'defect_type', 'chapter', 'section']].apply(lookup_mel, axis=1, is_chapter=True, mel_table=mel_map)
     df.reliable_section = df[['mel_number', 'defect_type', 'chapter', 'section']].apply(lookup_mel, axis=1, is_chapter=False, mel_table=mel_map)
+
+    # produce relabeling stats
+    ata_corrections_df = df[df.defect_type != 'E']
+    ata_corrections_df = ata_corrections_df[~ata_corrections_df.reliable_chapter.isnull()]
+    corrections = {}
+    for index, row in ata_corrections_df.iterrows():
+        src_ata = (row.chapter, row.section)
+        trg_ata = (row.reliable_chapter, row.reliable_section)
+
+        if src_ata in corrections:
+            trg_list = corrections[src_ata]
+        else:
+            trg_list = {}
+            corrections[src_ata] = trg_list
+
+        trg_list[trg_ata] = trg_list.get(trg_ata, 0) + 1
+
+    return corrections
