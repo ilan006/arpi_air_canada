@@ -191,10 +191,10 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
     for dist_matrix in matrix_names:
         dist_file = os.path.join(working_dir, dist_matrix + '.pkl')
         if os.path.exists(dist_file):
-            print("Loading distance matrix " + dist_matrix + '...')
+            print("Loading distance matrix " + dist_matrix + '...', flush=True)
             matrix = pickle.load(open(dist_file, 'rb'))
         else:
-            print("Computing distance matrix " + dist_matrix + '...', end=' ')
+            print("Computing distance matrix " + dist_matrix + '...', end=' ', flush=True)
             # compute the distance matrix
             matrix = {}
             grouped_by_ac = df.groupby('ac')
