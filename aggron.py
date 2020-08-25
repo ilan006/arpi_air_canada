@@ -203,7 +203,8 @@ def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: st
                 matrix[name] = compute_distance_matrix(ac_group, dist_matrix)
             print()
 
-        pickle.dump(matrix, open(dist_file, 'wb'))
+            pickle.dump(matrix, open(dist_file, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
         result[dist_matrix] = matrix
 
     return result
