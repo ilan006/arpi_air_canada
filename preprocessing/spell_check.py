@@ -66,12 +66,23 @@ def capped_levenshtein(token: str, dictionary: set):
             return candidates[0][0]
 
 
+min_letters_pattern = re.compile(".*[a-zA-Z]{3}.*")
+digit_pattern = re.compile(".*[0-9].*")
+def token_is_word_like(token):
+    if not min_letters_pattern.match(token):
+        return False
+    if digit_pattern.match(token):
+        return False
+    return True
+
+
 def process_txt(txt):
-    result = re.sub(r'[,\.;:"\(\)\[\]]', '', txt)
+    result = re.sub(r'[^a-zA-Z0-9]', ' ', txt)
+    result = result.lower()
     return result
 
 
-def spell_check(series, mpq, domain_dict: set, en_dict: set):
+def spell_check(series, mpq, domain_dict: set, en_dict: set, acronyms: set):
     rows_empty = 0
 
     for txt in series:
@@ -82,13 +93,39 @@ def spell_check(series, mpq, domain_dict: set, en_dict: set):
         for token in txt.split():
             token = token.lower()
 
-            if token.isalpha() and token not in en_dict and token not in domain_dict:
-                result = capped_levenshtein(token, domain_dict)
+            if token.isalpha() and token not in en_dict and token not in domain_dict and token not in acronyms:
+                result = capped_levenshtein(token, acronyms)
                 if result is not None:
-                    mpq.put((token, result, 2))
+                    s = 'acronym'
+                    if result in domain_dict:
+                        s += '+data'
+                    if result in en_dict:
+                        s += '+dict'
+                    mpq.put((token, result, s))
                 else:
-                    result = capped_levenshtein(token, en_dict)
-                    mpq.put((token, result, 1))
+                    result = capped_levenshtein(token, domain_dict)
+                    if result is not None:
+                        if result in en_dict:
+                            mpq.put((token, result, 'data+dict'))
+                        else:
+                            mpq.put((token, result, 'data'))
+                    else:
+                        result = capped_levenshtein(token, en_dict)
+                        mpq.put((token, result, 'dict'))
+
+
+"""
+Use this function to load a precomputed output of this module for any use.
+"""
+def load_spell_dict(filename: str):
+    spell_dict = dict()
+    with open(filename) as fin:
+        for line in fin.read().split('\n'):
+            if line == '': # last line
+                break
+            [token, correction, confidence] = line.split('\t')
+            assert(token not in spell_dict)
+            spell_dict[token] = (correction, confidence)
 
 
 if __name__ == "__main__":
@@ -98,6 +135,7 @@ if __name__ == "__main__":
     
     parser.add_argument("spell_check_output_file", help="Output file for the spell checking.")
     parser.add_argument("--en_dictionary", default="small_resources/en_dict.txt", help="Specify a different dictionary to check words against.")
+    parser.add_argument("--acronyms", default="fecode/small_ressources/acronyms_full", help="An acronym list to exclude from corrections.")
     args = parser.parse_args()
     
     with open(args.corpus_input_file, 'rb') as fin:
@@ -110,6 +148,15 @@ if __name__ == "__main__":
         for word in fin.read().split():
             if len(word) * MAX_EDIT_RATIO >= 1:
                 en_dict.add(word)
+
+    acronyms = set()
+    if args.acronyms is not None:
+        with open(args.acronyms) as fin:
+            for line in fin.read().split('\n'):
+                if line != '':
+                    acro = line.split()[1].lower()
+                    if len(acro) * MAX_EDIT_RATIO >= 1:
+                        acronyms.add(acro)
 
     domain_words = dict()
     for txt in defect_df_full.defect_description:
@@ -160,16 +207,18 @@ if __name__ == "__main__":
     multiprocessing.Process(target=writer, args=(args.spell_check_output_file, mpq)).start()
 
     txt_series = defect_df_full.defect_description
+    print("Searching corrections for defect descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
-        multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict)).start()
+        multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict, acronyms)).start()
 
     txt_series = defect_df_full.resolution_description
+    print("Searching corrections for resolution descriptions...")
     for i in tqdm(range(0, len(txt_series), chunk_size)):
         while len(multiprocessing.active_children()) >= max_jobs:
             time.sleep(.5)
-        multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict)).start()
+        multiprocessing.Process(target=spell_check, args=(txt_series[i:i+chunk_size], mpq, domain_dict, en_dict, acronyms)).start()
     
     while len(multiprocessing.active_children()) > 2:
         time.sleep(.5)
