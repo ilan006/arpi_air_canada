@@ -14,7 +14,7 @@ import arpi_evaluator
 
 def main():
     # normalization possibilities, add your functions here
-    NORMALIZATION_FUNCTIONS = {'none': lambda x: x, 'acro_replacement': replace_acros}
+    NORMALIZATION_FUNCTIONS = {'none': lambda x: x, 'acro_replacement': replace_acros, 'spel_replacement': replace_spel}
 
     # parse args
     parser = argparse.ArgumentParser("A sample program to test text normalization.")
@@ -112,8 +112,11 @@ def main():
     print(f"Precision is {precision * 100:.2f}%")
 
 
+
 __acro_map: dict = None
 __acro_keys: set = None
+__spel_map: dict = None
+__spel_keys: set = None
 
 
 def load_acro_map():
@@ -144,6 +147,32 @@ def replace_acros(text: str):
 
     return ' '.join(toks)
 
+def load_spell_map():
+    global __spel_map, __spel_keys
+    spel_file = os.path.join(os.path.dirname(__file__), 'small_resources', 'spelling_full.txt')
+    with open(spel_file, 'rt', encoding='utf-8') as fin:
+        lines = fin.readlines()
+
+    __spel_map = dict()
+    for line in lines:
+        parts = line.strip().split('\t')
+        if len(parts) == 3 and parts[2]==2:
+            __spel_map[parts[0].upper()] = parts[1].upper()
+
+    __spel_keys = set(__spel_map.keys())
+
+def replace_spel(text: str):
+    assert type(text) == str, "Invalid type " + str(type(text)) + " of value " + str(text)
+
+    if __spel_map is None:
+        load_spell_map()
+
+    toks = re.split(r'[\s\.,;/:\(\)-]', text)  # do not do this
+    for i, tok in enumerate(toks):
+        if tok in __spel_keys:
+            toks[i] = __spel_map.get(tok)
+
+    return ' '.join(toks)
 
 if __name__ == '__main__':
     main()
