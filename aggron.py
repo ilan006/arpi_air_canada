@@ -21,6 +21,8 @@ import arpi_evaluator
 
 __NUM_TOKEN = 'numba'
 __SPELLING_FULL = None
+__BEGINNING_OF_TIME = np.datetime64('1970-01-01T00:00:00')
+__TIMEDELTA_HOUR = np.timedelta64(1, 'h')
 
 
 def main():
@@ -63,6 +65,9 @@ def main():
                     load_full_spelling()
                 df['text_content'] = df.text_content.apply(normalization_functions.get(step))
 
+    print("Loading additional distance matrices...")
+    additional_dist_matrices = load_distance_matrices(['ata_ch_sec', 'delta_day'], defect_df_test, args.working_dir)
+
     # train vectorizer
     print("Tfidf.", file=sys.stderr)
     train_and_dev = pd.concat([defect_df_train, defect_df_dev], sort=True)
@@ -78,8 +83,6 @@ def main():
     normalizer = Normalizer(copy=False)  # svd does not yield normalized vectors
     lsa = make_pipeline(svd, normalizer)
 
-    additional_dist_matrices = load_distance_matrices(defect_df_test, args.working_dir)
-
     grouped_by_ac = defect_df_test.groupby('ac')
     for name, ac_group in grouped_by_ac:
         print(f'{name} ({len(ac_group)})', end=', ', flush=True)
@@ -88,11 +91,12 @@ def main():
         if lsa:  # may have to be run on full corpus rather than on subset
             X = lsa.fit_transform(X)
 
-        dist_matrix = pairwise_distances(X, None, metric='euclidean', n_jobs=-1)  # custom fun is very slow? 'euclidean' is fast and good
+        text_representation_matrix = pairwise_distances(X, None, metric='euclidean', n_jobs=-1)  # custom fun is very slow? 'euclidean' is fast and good
+        distance_matrix = 0.5 * text_representation_matrix + 0.5 * additional_dist_matrices['ata_ch_sec'][name]
 
         clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',  # None here and
-                                                   distance_threshold=1.0, linkage='average')  # 1.0 for thresh
-        clusters = clustering_model.fit_predict(dist_matrix)
+                                                   distance_threshold=1.0, linkage='average')  # 1.0 for thresh (play with this hyperparameter is important)
+        clusters = clustering_model.fit_predict(distance_matrix)
 
         row_number = 0
         for index, _ in ac_group.iterrows():
@@ -165,39 +169,61 @@ def load_full_spelling():
 
 def compute_distance_matrix(df_view: pd.DataFrame, dist_matrix: str):
     if dist_matrix == 'ref':  # a reference to another defect in writing
-        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1, metric=distance_metric_ref,
-                                    dataframe=df_view)
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_ref, df=df_view)
+    elif dist_matrix == 'ata_ch_sec':
+        quick_df = df_view.apply(lambda x: f"{str(x['chapter'])}-{str(x['section'])}", axis=1)
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_ata_ch_sec, df=quick_df)
+    elif dist_matrix == 'delta_day':
+        quick_df = df_view.apply(lambda x: (x['reported_datetime'] - __BEGINNING_OF_TIME) // __TIMEDELTA_HOUR, axis=1)
+        result = pairwise_distances(np.reshape(range(0, len(df_view)), (-1, 1)), n_jobs=-1,
+                                    metric=distance_metric_delta_day, df=quick_df)
     else:
         raise ValueError("Invalid distance metric " + dist_matrix)
 
+    result = result.astype(np.float16)
     return result
 
 
-def load_distance_matrices(df: pd.DataFrame, working_dir: str):
+def load_distance_matrices(matrix_names: list, df: pd.DataFrame, working_dir: str):
     result = {}
 
-    for dist_matrix in ['ref', 'time']:
+    for dist_matrix in matrix_names:
         dist_file = os.path.join(working_dir, dist_matrix + '.pkl')
         if os.path.exists(dist_file):
-            print("Loading feature " + dist_matrix)
+            print("Loading distance matrix " + dist_matrix + '...', flush=True)
             matrix = pickle.load(open(dist_file, 'rb'))
         else:
+            print("Computing distance matrix " + dist_matrix + '...', end=' ', flush=True)
             # compute the distance matrix
             matrix = {}
             grouped_by_ac = df.groupby('ac')
             for name, ac_group in grouped_by_ac:
+                print(name, end=' ', flush=True)
                 matrix[name] = compute_distance_matrix(ac_group, dist_matrix)
+            print()
 
-        pickle.dump(matrix, open(dist_file, 'wb'))
+            pickle.dump(matrix, open(dist_file, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
         result[dist_matrix] = matrix
 
     return result
 
 
-def distance_metric_ref(index1, index2, dataframe):
+def distance_metric_ref(index1, index2, df: pd.DataFrame):
     """index1 is the index in the dataframe of the line"""
-    print(f"{index1}-{index2}")
+    print(f"{index1}-{index2}-{df.iloc[index1, 'text_content']}")
+    raise NotImplementedError("not yet implemented")
     return 1
+
+
+def distance_metric_ata_ch_sec(index1, index2, df: pd.Series):
+    return 0. if df[int(index1)] == df[int(index2)] else 1.
+
+
+def distance_metric_delta_day(index1, index2, df: pd.Series):
+    return abs(df[int(index1)] - df[int(index2)]) / 24.0
 
 
 if __name__ == '__main__':
