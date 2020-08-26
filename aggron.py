@@ -33,7 +33,6 @@ def main():
     parser.add_argument("output_file", help="An output file where evaluation details will be written.")
     parser.add_argument('--text_fields', help='Text field(s) to use, comma-sep.', default='defect_description')
     parser.add_argument('--norm_steps', help='Normalization steps, e.g. tokenize,spelling,num')
-    parser.add_argument('--clustering_method', help='Clustering method', default='kmeans')
     args = parser.parse_args()
 
     lsa = True
