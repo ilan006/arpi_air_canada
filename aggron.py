@@ -65,56 +65,61 @@ def main():
                     load_full_spelling()
                 df['text_content'] = df.text_content.apply(normalization_functions.get(step))
 
-    print("Loading additional distance matrices...")
+    print("Loading simple distance matrices...")
     additional_dist_matrices = load_distance_matrices(['ata_ch_sec', 'delta_day'], defect_df_test, args.working_dir)
 
-    # train vectorizer
+    # train vectorizer and prepare representation clusters
     print("Tfidf.", file=sys.stderr)
     train_and_dev = pd.concat([defect_df_train, defect_df_dev], sort=True)
     tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='utf-8', ngram_range=(1, 2),
                             stop_words='english', max_features=10000)
     vectorizer = tfidf.fit(train_and_dev.text_content.tolist())
 
-    print("Clustering...", end=' ', flush=True)
-    df_cluster_predictions = pd.DataFrame(index=defect_df_test.index)
-    df_cluster_predictions['cluster'] = ''  # new column for cluster label
+    if lsa:
+        svd = TruncatedSVD(100)  # 100 is better!
+        normalizer = Normalizer(copy=False)  # svd does not yield normalized vectors
+        lsa = make_pipeline(svd, normalizer)
 
-    svd = TruncatedSVD(100)  # 100 is better!
-    normalizer = Normalizer(copy=False)  # svd does not yield normalized vectors
-    lsa = make_pipeline(svd, normalizer)
-
+    tfidf_matrix = {}
     grouped_by_ac = defect_df_test.groupby('ac')
     for name, ac_group in grouped_by_ac:
-        print(f'{name} ({len(ac_group)})', end=', ', flush=True)
-        X = vectorizer.transform(ac_group.text_content)
-
+        representation = vectorizer.transform(ac_group.text_content)
         if lsa:  # may have to be run on full corpus rather than on subset
-            X = lsa.fit_transform(X)
+            representation = lsa.fit_transform(representation)
+        tfidf_dist_matrix = pairwise_distances(representation, None, metric='euclidean', n_jobs=-1)  # euclidean fast and good
+        tfidf_matrix[name] = tfidf_dist_matrix
 
-        text_representation_matrix = pairwise_distances(X, None, metric='euclidean', n_jobs=-1)  # custom fun is very slow? 'euclidean' is fast and good
-        distance_matrix = 0.5 * text_representation_matrix + 0.5 * additional_dist_matrices['ata_ch_sec'][name]
+    # clustering itself
+    print("Clustering...", flush=True)
+    df_cluster_predictions = pd.DataFrame(index=defect_df_test.index)
+    df_cluster_predictions['cluster'] = ''  # new column for cluster label
+    for threshold in np.arange(0.01, 0.17, 0.02):
+        grouped_by_ac = defect_df_test.groupby('ac')
+        for name, ac_group in grouped_by_ac:
+            text_representation_matrix = tfidf_matrix[name]
+            distance_matrix = 0.7 * normalize(text_representation_matrix) + 0.3 * normalize(additional_dist_matrices['delta_day'][name])
 
-        clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',  # None here and
-                                                   distance_threshold=1.0, linkage='average')  # 1.0 for thresh (play with this hyperparameter is important)
-        clusters = clustering_model.fit_predict(distance_matrix)
+            clustering_model = AgglomerativeClustering(n_clusters=None, affinity='precomputed',  # None here and
+                                                       distance_threshold=threshold, linkage='average')  # 1.0 for thresh (playing with this hyperparameter is important)
+            clusters = clustering_model.fit_predict(distance_matrix)
 
-        row_number = 0
-        for index, _ in ac_group.iterrows():
-            df_cluster_predictions.loc[index]['cluster'] = f'{name}-{str(clusters[row_number])}'
-            row_number += 1
+            row_number = 0
+            for index, _ in ac_group.iterrows():
+                df_cluster_predictions.loc[index]['cluster'] = f'{name}-{str(clusters[row_number])}'
+                row_number += 1
 
-    # evaluation
-    print("\nEvaluating.")
-    predicted_cluster_list = convert_to_cluster_list(df_cluster_predictions)
-    eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, predicted_cluster_list)
-    pred_clusters, ref_clusters = eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters']
-    eval_debug_info['pred_clusters'] = eval_debug_info['ref_clusters'] = 'muted'
-    pprint(eval_debug_info)
+        # evaluation
+        print(f"\nEvaluation with threshold {threshold}.")
+        predicted_cluster_list = convert_to_cluster_list(df_cluster_predictions)
+        eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, predicted_cluster_list)
+        pred_clusters, ref_clusters = eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters']
+        eval_debug_info['pred_clusters'] = eval_debug_info['ref_clusters'] = 'muted'
+        pprint(eval_debug_info)
 
-    print(f"\nDumping debug info in file {args.output_file}")
-    eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters'] = pred_clusters, ref_clusters
-    with open(args.output_file, 'wt', encoding='utf-8') as fout:
-        arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
+        # print(f"\nDumping debug info in file {args.output_file}")
+        # eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters'] = pred_clusters, ref_clusters
+        # with open(args.output_file, 'wt', encoding='utf-8') as fout:
+        #     arpi_evaluator.dump_debug_info(defect_df_test, eval_debug_info, fout)
 
 
 def convert_to_cluster_list(df_cluster_predictions):
@@ -224,6 +229,13 @@ def distance_metric_ata_ch_sec(index1, index2, df: pd.Series):
 
 def distance_metric_delta_day(index1, index2, df: pd.Series):
     return abs(df[int(index1)] - df[int(index2)]) / 24.0
+
+
+def normalize(dist: np.ndarray):
+    dist = dist.astype(np.float64, copy=False)
+    mean = np.mean(dist)
+    std = np.std(dist)
+    return (dist - mean) / std
 
 
 if __name__ == '__main__':
