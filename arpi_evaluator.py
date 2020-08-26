@@ -10,7 +10,7 @@ import pandas as pd
 NO_CLUSTER_LABEL = -1
 
 
-def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=True,
+def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=False,
                                remove_invalid_clusters=True):
     """
     Uses sklearn's Adjusted Rand Index, homogeneity, completeness and v-measure
