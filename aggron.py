@@ -8,7 +8,6 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-from pprint import pprint
 import sys
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import TruncatedSVD
@@ -90,9 +89,10 @@ def main():
 
     # clustering itself
     print("Clustering...", flush=True)
-    df_cluster_predictions = pd.DataFrame(index=defect_df_test.index)
-    df_cluster_predictions['cluster'] = ''  # new column for cluster label
     for threshold in np.arange(0.01, 0.17, 0.02):
+        df_cluster_predictions = pd.DataFrame(index=defect_df_test.index)
+        df_cluster_predictions['cluster'] = ''  # new column for cluster label
+
         grouped_by_ac = defect_df_test.groupby('ac')
         for name, ac_group in grouped_by_ac:
             text_representation_matrix = tfidf_matrix[name]
@@ -105,6 +105,7 @@ def main():
             row_number = 0
             for index, _ in ac_group.iterrows():
                 df_cluster_predictions.loc[index]['cluster'] = f'{name}-{str(clusters[row_number])}'
+                # df_cluster_predictions.loc[index]['cluster'] = str(ac_group.loc[index]['recurrent']) if not pd.isnull(ac_group.loc[index]['recurrent']) else f"{name}-{str(row_number)}"
                 row_number += 1
 
         # evaluation
@@ -113,7 +114,12 @@ def main():
         eval_debug_info = arpi_evaluator.evaluate_recurrent_defects(defect_df_test, predicted_cluster_list)
         pred_clusters, ref_clusters = eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters']
         eval_debug_info['pred_clusters'] = eval_debug_info['ref_clusters'] = 'muted'
-        pprint(eval_debug_info)
+        print('\t'.join([f"ari={eval_debug_info['ari_score']:.2f}",
+                         f"homog={eval_debug_info['homogeneity'] * 100:.1f}%",
+                         f"compl={eval_debug_info['completeness'] * 100:.1f}%",
+                         f"v_meas={eval_debug_info['v_measure'] * 100:.1f}%",
+                         f"nb_pred_clust={eval_debug_info['nb_pred_clusters']}",
+                         f"nb_clust={eval_debug_info['nb_ref_clusters']}"]))
 
         # print(f"\nDumping debug info in file {args.output_file}")
         # eval_debug_info['pred_clusters'], eval_debug_info['ref_clusters'] = pred_clusters, ref_clusters
@@ -131,7 +137,7 @@ def convert_to_cluster_list(df_cluster_predictions):
         cur_set.add(index)
     predicted_cluster_list = []
     for label_cluster in cluster_to_id.values():
-        if len(label_cluster) > 1:
+        if len(label_cluster) > 1:  # only clusters of size > 1
             predicted_cluster_list.append(label_cluster)
     return predicted_cluster_list
 

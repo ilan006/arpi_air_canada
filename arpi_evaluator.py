@@ -40,7 +40,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
         ref_clusters - a list of reference cluster labels, useful for debug
         remove_ata_zero_section - copy of argument remove_ata_zero_section for this function
         nb_ref_clusters: nb of clusters in the reference
-        n_pred_clusters: nb of cluster predicted
+        nb_pred_clusters: nb of cluster predicted
     """
 
     filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)  # when there is no recurrent id, define as not clustered
