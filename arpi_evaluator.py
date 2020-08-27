@@ -1,6 +1,7 @@
 """
 This script evaluates a candidate clustering given a reference.
 """
+import numpy
 import os
 
 from sklearn.metrics import homogeneity_completeness_v_measure
@@ -10,7 +11,7 @@ import pandas as pd
 NO_CLUSTER_LABEL = -1
 
 
-def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=True,
+def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zero_section=False,
                                remove_invalid_clusters=True):
     """
     Uses sklearn's Adjusted Rand Index, homogeneity, completeness and v-measure
@@ -40,7 +41,8 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
         ref_clusters - a list of reference cluster labels, useful for debug
         remove_ata_zero_section - copy of argument remove_ata_zero_section for this function
         nb_ref_clusters: nb of clusters in the reference
-        n_pred_clusters: nb of cluster predicted
+        nb_pred_clusters: nb of cluster predicted
+        avg_pred_cluster_size: average of predicted cluster size without any filtering
     """
 
     filled_df = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)  # when there is no recurrent id, define as not clustered
@@ -68,7 +70,8 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
             'completeness': completeness, 'v_measure': v_measure_score,
             'pred_clusters': pred_clusters, 'ref_clusters': ref_clusters,
             'remove_ata_zero_section': remove_ata_zero_section,
-            'nb_ref_clusters': ref_clusters.nunique() - 1, 'nb_pred_clusters': len(set(pred_clusters)) }
+            'nb_ref_clusters': ref_clusters.nunique() - 1, 'nb_pred_clusters': len(set(pred_clusters)),
+            'avg_pred_cluster_size': numpy.mean([len(x) for x in predictions])}
 
 
 def convert_cluster_labels_to_seq(ref_df: pd.DataFrame, predictions):
@@ -131,7 +134,7 @@ def lookup_mel(series, is_chapter, mel_table):
     return result
 
 
-def relabel_ata(df: pd.DataFrame) -> None:
+def relabel_ata(df: pd.DataFrame) -> dict:
     """
     Adds columns describing more reliable ATA chapters and sections, taken from MEL. We also consider 'E' type
     defects as reliable. Other, non-reliable defects will have n/a (or null) for these columns. The columns added
