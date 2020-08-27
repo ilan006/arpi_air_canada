@@ -114,6 +114,7 @@ def load_spell_dict(filename: str):
             [token, correction, confidence] = line.split('\t')
             assert(token not in spell_dict)
             spell_dict[token] = (correction, confidence)
+    return spell_dict
 
 
 if __name__ == "__main__":
