@@ -213,6 +213,6 @@ def find_reference_cluster_labels(ref_df: pd.DataFrame, remove_ata_zero_section=
     result = []
     for cluster_name, clustered_defects in groups:
         if cluster_name != NO_CLUSTER_LABEL:
-            result.append(clustered_defects.index.tolist())
+            result.append(set(clustered_defects.index.tolist()))
 
     return result
