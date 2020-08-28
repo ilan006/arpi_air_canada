@@ -1,12 +1,12 @@
 """
 This script evaluates a candidate clustering given a reference.
 """
-import numpy
 import os
 
+import numpy
+import pandas as pd
 from sklearn.metrics import homogeneity_completeness_v_measure
 from sklearn.metrics.cluster import adjusted_rand_score
-import pandas as pd
 
 NO_CLUSTER_LABEL = -1
 
@@ -190,3 +190,29 @@ def relabel_ata(df: pd.DataFrame) -> dict:
         trg_list[trg_ata] = trg_list.get(trg_ata, 0) + 1
 
     return corrections
+
+
+def find_reference_cluster_labels(ref_df: pd.DataFrame, remove_ata_zero_section=False,
+                                  remove_invalid_clusters=True):
+    """Returns a list of cluster labels like the input expected of evaluate_recurrent_defects"""
+    filled_df: pd.Series = ref_df.recurrent.fillna(NO_CLUSTER_LABEL)  # when there is no recurrent id, define as not clustered
+
+    if remove_ata_zero_section:
+        filled_df.where(ref_df.section == 0, NO_CLUSTER_LABEL, inplace=True)
+
+    if remove_invalid_clusters:
+        valid_cluster_ids = get_valid_cluster_ids()
+        filled_df = filled_df.apply(lambda clus_id: clus_id if clus_id in valid_cluster_ids else NO_CLUSTER_LABEL)
+
+    # remove clusters with a single member, which are not clusters at all
+    duplicate_df = filled_df.duplicated(keep=False)
+    filled_df.where(duplicate_df, NO_CLUSTER_LABEL, inplace=True)
+
+    # convert the dataframe to a list of set of defect labels
+    groups = filled_df.groupby(filled_df)
+    result = []
+    for cluster_name, clustered_defects in groups:
+        if cluster_name != NO_CLUSTER_LABEL:
+            result.append(clustered_defects.index.tolist())
+
+    return result
