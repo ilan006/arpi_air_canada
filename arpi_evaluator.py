@@ -27,7 +27,7 @@ def evaluate_recurrent_defects(ref_df: pd.DataFrame, predictions, remove_ata_zer
                         the same cluster, i.e.
                         [{'C-6414274-1', 'L-5245081-1'}, {'C-6414294-1', 'C-6414295-1', 'C-6414296-1'}, ...]
                         Clusters containing a single element are ignored during evaluation.
-    :param remove_ata_zero_section: Remove from the reference all clusters for which the ATA section is 0 (recommended)
+    :param remove_ata_zero_section: Remove from the reference all clusters for which the ATA section is 0 (not recommended)
     :param remove_invalid_clusters: Remove clusters which were invalidated by humans (recommended).
     :return: A dict with the following keys
         ari_score - Adjusted Rand Index, similarity score between -1.0 and 1.0. Random labelings have an ARI close to 0.
